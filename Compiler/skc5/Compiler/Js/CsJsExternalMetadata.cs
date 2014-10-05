@@ -6,24 +6,24 @@ using Mirrored.SharpKit.JavaScript;
 using ICSharpCode.NRefactory.TypeSystem;
 using ICSharpCode.NRefactory.Extensions;
 
-namespace SharpKit.Compiler
+namespace SharpKit.Compiler.JavaScript
 {
-    class ExternalAttribute
-    {
-        public ResolvedAttribute Entity { get; set; }
-        public IType TargetType { get; set; }
-        public string TargetTypeName { get; set; }
-    }
-
     /// <summary>
     /// Finds assembly JsTypeAttribute(s) with TargetType, and adds them to the target type.
     /// Finds assembly JsMethodAttribute(s) with TargetType and TargetMethod, and adds them to the target method(s)
     /// </summary>
-    class CsExternalMetadata
+    class CsJsExternalMetadata : ICsExternalMetadata
     {
+        private readonly List<ITypeDefinition> _typesWithExternalAttributes = new List<ITypeDefinition>();
+
         public CompilerLogger Log { get; set; }
         public SkProject Project { get; set; }
-        public List<ITypeDefinition> TypesWithExternalAttributes = new List<ITypeDefinition>();
+
+        public IEnumerable<ITypeDefinition> TypesWithExternalAttributes
+        {
+            get { return _typesWithExternalAttributes; }
+        }
+
         //public List<IMethod> MethodsWithExternalMetadata = new List<IMethod>();
         //public List<IProperty> PropertiesWithExternalMetadata = new List<IProperty>();
         //public Dictionary<IEntity, List<IAttribute>> ExternalMetadata = new Dictionary<IEntity, List<IAttribute>>();
@@ -56,7 +56,7 @@ namespace SharpKit.Compiler
                         //TODO: this is also possible, maybe better
                         //ce.Attributes.Add(pair.Entity);
 
-                        TypesWithExternalAttributes.Add(ce);
+                        _typesWithExternalAttributes.Add(ce);
                         ce.GetExtension(true).ExternalResolvedAttributes.Add(pair.Entity);
                     };
                     asm.ResolvedAttributes.FindByType<JsMethodAttribute>().ForEach(t =>

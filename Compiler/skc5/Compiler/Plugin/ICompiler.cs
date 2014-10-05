@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using ICSharpCode.NRefactory.Semantics;
 using ICSharpCode.NRefactory.CSharp;
+using SharpKit.Compiler.Ast;
 using SharpKit.JavaScript.Ast;
 using ICSharpCode.NRefactory.TypeSystem;
 
@@ -27,7 +28,7 @@ namespace SharpKit.Compiler
 
         event Action BeforeParseCs;
         event Action BeforeApplyExternalMetadata;
-        event Action BeforeConvertCsToJs;
+        event Action BeforeConvertCsToTarget;
         event Action BeforeMergeJsFiles;
         event Action BeforeInjectJsCode;
         event Action BeforeOptimizeJsFiles;
@@ -38,7 +39,7 @@ namespace SharpKit.Compiler
 
         event Action AfterParseCs;
         event Action AfterApplyExternalMetadata;
-        event Action AfterConvertCsToJs;
+        event Action AfterConvertCsToTarget;
         event Action AfterMergeJsFiles;
         event Action AfterInjectJsCode;
         event Action AfterOptimizeJsFiles;
@@ -47,14 +48,14 @@ namespace SharpKit.Compiler
         event Action AfterSaveNewManifest;
 
 
-        event Action<IEntity> BeforeConvertCsToJsEntity;
-        event Action<IEntity, JsNode> AfterConvertCsToJsEntity;
+        event Action<IEntity> BeforeConvertCsToTargetEntity;
+        event Action<IEntity, ITargetNode> AfterConvertCsToTargetEntity;
 
-        event Action<AstNode> BeforeConvertCsToJsAstNode;
-        event Action<AstNode, JsNode> AfterConvertCsToJsAstNode;
+        event Action<AstNode> BeforeConvertCsToTargetAstNode;
+        event Action<AstNode, ITargetNode> AfterConvertCsToTargetAstNode;
 
-        event Action<ResolveResult> BeforeConvertCsToJsResolveResult;
-        event Action<ResolveResult, JsNode> AfterConvertCsToJsResolveResult;
+        event Action<ResolveResult> BeforeConvertCsToTargetResolveResult;
+        event Action<ResolveResult, ITargetNode> AfterConvertCsToTargetResolveResult;
 
         #endregion
 

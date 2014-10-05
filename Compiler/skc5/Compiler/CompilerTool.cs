@@ -9,6 +9,8 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Threading;
 using System.Globalization;
+using SharpKit.Compiler.Ast;
+using SharpKit.Compiler.JavaScript;
 using SharpKit.JavaScript.Ast;
 using SharpKit.Compiler.SourceMapping;
 using Mono.Cecil;
@@ -121,7 +123,7 @@ namespace SharpKit.Compiler
         public CompilerLogger Log { get; set; }
         public SkProject Project { get; set; }
         public List<string> Defines { get; set; }
-        public CsExternalMetadata CsExternalMetadata { get; set; }
+        public ICsExternalMetadata CsExternalMetadata { get; set; }
         public string SkcVersion { get; set; }
         public string[] CommandLineArguments { get; set; }
         public bool Debug { get; set; }
@@ -568,7 +570,7 @@ namespace SharpKit.Compiler
         {
 
             TriggerEvent(BeforeApplyExternalMetadata);
-            CsExternalMetadata = new CsExternalMetadata { Project = Project, Log = Log };
+            CsExternalMetadata = new CsJsExternalMetadata { Project = Project, Log = Log };
             CsExternalMetadata.Process();
 
             TriggerEvent(AfterApplyExternalMetadata);
@@ -576,7 +578,7 @@ namespace SharpKit.Compiler
 
         void ConvertCsToJs()
         {
-            TriggerEvent(BeforeConvertCsToJs);
+            TriggerEvent(BeforeConvertCsToTarget);
             PathMerger = new PathMerger();
             TypeConverter = new TypeConverter
             {
@@ -609,7 +611,7 @@ namespace SharpKit.Compiler
             TypeConverter.Process();
             SkJsFiles = TypeConverter.JsFiles.Select(ToSkJsFile).ToList();
 
-            TriggerEvent(AfterConvertCsToJs);
+            TriggerEvent(AfterConvertCsToTarget);
         }
 
         private SkJsFile ToSkJsFile(JsFile t)
@@ -621,33 +623,33 @@ namespace SharpKit.Compiler
         {
             obj.BeforeVisitEntity += me =>
             {
-                if (BeforeConvertCsToJsEntity != null)
-                    BeforeConvertCsToJsEntity(me);
+                if (BeforeConvertCsToTargetEntity != null)
+                    BeforeConvertCsToTargetEntity(me);
             };
             obj.AfterVisitEntity += (me, node) =>
             {
-                if (AfterConvertCsToJsEntity != null)
-                    AfterConvertCsToJsEntity(me, node);
+                if (AfterConvertCsToTargetEntity != null)
+                    AfterConvertCsToTargetEntity(me, node);
             };
             obj.AstNodeConverter.BeforeConvertCsToJsAstNode += node =>
             {
-                if (BeforeConvertCsToJsAstNode != null)
-                    BeforeConvertCsToJsAstNode(node);
+                if (BeforeConvertCsToTargetAstNode != null)
+                    BeforeConvertCsToTargetAstNode(node);
             };
             obj.AstNodeConverter.AfterConvertCsToJsAstNode += (node, node2) =>
             {
-                if (AfterConvertCsToJsAstNode != null)
-                    AfterConvertCsToJsAstNode(node, node2);
+                if (AfterConvertCsToTargetAstNode != null)
+                    AfterConvertCsToTargetAstNode(node, node2);
             };
             obj.AstNodeConverter.ResolveResultConverter.BeforeConvertCsToJsResolveResult += res =>
             {
-                if (BeforeConvertCsToJsResolveResult != null)
-                    BeforeConvertCsToJsResolveResult(res);
+                if (BeforeConvertCsToTargetResolveResult != null)
+                    BeforeConvertCsToTargetResolveResult(res);
             };
             obj.AstNodeConverter.ResolveResultConverter.AfterConvertCsToJsResolveResult += (res, node) =>
             {
-                if (AfterConvertCsToJsResolveResult != null)
-                    AfterConvertCsToJsResolveResult(res, node);
+                if (AfterConvertCsToTargetResolveResult != null)
+                    AfterConvertCsToTargetResolveResult(res, node);
             };
         }
 
@@ -1044,7 +1046,7 @@ namespace SharpKit.Compiler
 
         public event Action BeforeParseCs;
         public event Action BeforeApplyExternalMetadata;
-        public event Action BeforeConvertCsToJs;
+        public event Action BeforeConvertCsToTarget;
         public event Action BeforeMergeJsFiles;
         public event Action BeforeInjectJsCode;
         public event Action BeforeOptimizeJsFiles;
@@ -1054,7 +1056,7 @@ namespace SharpKit.Compiler
 
         public event Action AfterParseCs;
         public event Action AfterApplyExternalMetadata;
-        public event Action AfterConvertCsToJs;
+        public event Action AfterConvertCsToTarget;
         public event Action AfterMergeJsFiles;
         public event Action AfterInjectJsCode;
         public event Action AfterOptimizeJsFiles;
@@ -1360,9 +1362,9 @@ namespace SharpKit.Compiler
         #region ICompiler Members
 
 
-        public event Action<IEntity> BeforeConvertCsToJsEntity;
+        public event Action<IEntity> BeforeConvertCsToTargetEntity;
 
-        public event Action<IEntity, JsNode> AfterConvertCsToJsEntity;
+        public event Action<IEntity, ITargetNode> AfterConvertCsToTargetEntity;
 
 
 
@@ -1370,13 +1372,13 @@ namespace SharpKit.Compiler
 
 
 
-        public event Action<ICSharpCode.NRefactory.CSharp.AstNode> BeforeConvertCsToJsAstNode;
+        public event Action<ICSharpCode.NRefactory.CSharp.AstNode> BeforeConvertCsToTargetAstNode;
 
-        public event Action<ICSharpCode.NRefactory.CSharp.AstNode, JsNode> AfterConvertCsToJsAstNode;
+        public event Action<ICSharpCode.NRefactory.CSharp.AstNode, ITargetNode> AfterConvertCsToTargetAstNode;
 
-        public event Action<ICSharpCode.NRefactory.Semantics.ResolveResult> BeforeConvertCsToJsResolveResult;
+        public event Action<ICSharpCode.NRefactory.Semantics.ResolveResult> BeforeConvertCsToTargetResolveResult;
 
-        public event Action<ICSharpCode.NRefactory.Semantics.ResolveResult, JsNode> AfterConvertCsToJsResolveResult;
+        public event Action<ICSharpCode.NRefactory.Semantics.ResolveResult, ITargetNode> AfterConvertCsToTargetResolveResult;
 
 
         CustomAttributeProvider _CustomAttributeProvider;

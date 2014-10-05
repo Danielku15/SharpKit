@@ -102,7 +102,7 @@ namespace SharpKit.Compiler
             }
         }
 
-        public bool? IsJsExported { get; set; }
+        public bool? IsExported { get; set; }
         public bool? IsRemotable { get; set; }
         public bool? IsGlobalType { get; set; }
         public bool? IsNativeType { get; set; }

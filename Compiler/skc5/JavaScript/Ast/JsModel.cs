@@ -5,6 +5,7 @@ using System.Text;
 using System.IO;
 using System.CodeDom.Compiler;
 using System.Globalization;
+using SharpKit.Compiler.Ast;
 
 namespace SharpKit.JavaScript.Ast
 {
@@ -177,7 +178,7 @@ namespace SharpKit.JavaScript.Ast
         }
     }
 
-    public partial class JsNode : AbstractAnnotatable
+    public partial class JsNode : AbstractAnnotatable, ITargetNode
     {
         public JsNodeType NodeType { get; protected set; }
         public string ToJs()

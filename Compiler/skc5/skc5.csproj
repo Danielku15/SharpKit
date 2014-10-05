@@ -76,8 +76,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Compiler\Ast\ITargetNode.cs" />
     <Compile Include="Compiler\ClrResolveVisitor.cs" />
     <Compile Include="Compiler\CsToJs\TsMemberConverter.cs" />
+    <Compile Include="Compiler\Java\JCodeImporter.cs" />
+    <Compile Include="Compiler\Java\JCodeImporter2.cs" />
+    <Compile Include="Compiler\Java\JCodeImporter3.cs" />
+    <Compile Include="Compiler\Java\JModelImporter.cs" />
+    <Compile Include="Compiler\Java\JYieldRefactorer.cs" />
+    <Compile Include="Compiler\Java\JTypeImporter.cs" />
+    <Compile Include="Compiler\Js\CsJsExternalMetadata.cs" />
     <Compile Include="JavaScript\Ast\JsModel.Visitor.generated.cs" />
     <Compile Include="JavaScript\JsCodeInliner.cs" />
     <Compile Include="Compiler\Extensions_Collections.cs" />
@@ -93,7 +101,7 @@
     <Compile Include="Compiler\CsToJs\ResolveResultConverter_Invocation.cs" />
     <Compile Include="Compiler\Cs2.cs" />
     <Compile Include="Compiler\CsEntityExt.cs" />
-    <Compile Include="Compiler\CsExternalMetadata.cs" />
+    <Compile Include="Compiler\ICsExternalMetadata.cs" />
     <Compile Include="Compiler\CssCompressor.cs" />
     <Compile Include="Compiler\CssCompressorExtensions.cs" />
     <Compile Include="Compiler\Extensions_Metadata.cs" />
@@ -129,7 +137,7 @@
     <Compile Include="Compiler\SourceMapping\SourceMapping.cs" />
     <Compile Include="Compiler\SourceMapping\SourceMappingHelper.cs" />
     <Compile Include="Compiler\SourceMapping\SourceMappingV3.cs" />
-    <Compile Include="Compiler\YieldRefactorer.cs" />
+    <Compile Include="Compiler\Js\JsYieldRefactorer.cs" />
     <Compile Include="JavaScript\Ast\Extensions.cs" />
     <Compile Include="JavaScript\Ast\JsFormatter_Minified.cs" />
     <Compile Include="JavaScript\Ast\JsFormatter_CSharp.cs" />
@@ -148,6 +156,16 @@
     <Compile Include="JavaScript\JsAttributesEx.cs" />
     <Compile Include="JavaScript\Ast\JsFormatter.cs" />
     <Compile Include="JavaScript\Ast\JsTokenWriter.cs" />
+    <Compile Include="Java\Ast\Extensions.cs" />
+    <Compile Include="Java\Ast\J.cs" />
+    <Compile Include="Java\Ast\JFile.cs" />
+    <Compile Include="Java\Ast\JModel.cs" />
+    <Compile Include="Java\Ast\JModel2.cs" />
+    <Compile Include="Java\JMeta.cs" />
+    <Compile Include="Java\JNaming.cs" />
+    <Compile Include="Java\Ast\JWriter.cs" />
+    <Compile Include="Java\JAttributes.cs" />
+    <Compile Include="Java\JAttributesEx.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TypeScript\TsEntity.cs" />
     <Compile Include="TypeScript\TsWriter.cs" />
@@ -173,7 +191,7 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent Condition=" '$(OS)' == 'Windows_NT' ">rem xcopy $(TargetDir)*.* C:\Windows\Microsoft.NET\Framework\v4.0.30319\SharpKit\5\ /C /Y /d</PostBuildEvent>
-	<PostBuildEvent Condition=" '$(OS)' != 'Windows_NT' ">
+    <PostBuildEvent Condition=" '$(OS)' != 'Windows_NT' ">
 	#cp $(TargetDir)*.* C:\Windows\Microsoft.NET\Framework\v4.0.30319\SharpKit\5\ /C /Y /d
 	</PostBuildEvent>
   </PropertyGroup>

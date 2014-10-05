@@ -19,7 +19,7 @@ namespace SharpKit.Compiler.CsToJs
     {
         public bool ExportComments { get; set; }
         public CompilerLogger Log { get; set; }
-        public CsExternalMetadata ExternalMetadata { get; set; }
+        public ICsExternalMetadata ExternalMetadata { get; set; }
         public SkProject Project { get { return Compiler.Project; } }
         public List<JsFile> JsFiles { get; set; }
         public string AssemblyName { get; set; }

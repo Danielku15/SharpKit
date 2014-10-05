@@ -6,7 +6,7 @@ using SharpKit.JavaScript.Ast;
 
 namespace SharpKit.Compiler
 {
-    class YieldRefactorer
+    class JsYieldRefactorer
     {
         public JsFunction BeforeFunction { get; set; }
         public JsFunction AfterFunction { get; set; }
@@ -43,7 +43,7 @@ namespace SharpKit.Compiler
             func.Block.Statements.Add(Js.Var("result").Statement());
             var stSwitch = Js.Switch(_state());
             var lastStep = Js.Block().Add(_state().Assign(Js.Value(Steps.Count)).Statement()).Add(new JsBreakStatement());
-            Steps.Add(new YieldStep { Statements = { lastStep } });
+            Steps.Add(new JsYieldStep { Statements = { lastStep } });
             foreach (var step in Steps)
             {
                 stSwitch.Case(Js.Value(i), step.Statements);
@@ -59,7 +59,7 @@ namespace SharpKit.Compiler
 
         void BeginNewStep()
         {
-            Steps.Add(new YieldStep());
+            Steps.Add(new JsYieldStep());
             AddToCurrentStep(_state().Assign(Js.Value(-1)).Statement());
         }
 
@@ -129,7 +129,7 @@ namespace SharpKit.Compiler
             return Js.This().Member("_state");
         }
 
-        List<YieldStep> Steps = new List<YieldStep>();
+        List<JsYieldStep> Steps = new List<JsYieldStep>();
 
         private void ReplaceNode(JsNode node, JsNode node2)
         {
@@ -172,9 +172,9 @@ namespace SharpKit.Compiler
     class JsYieldBreakStatement : JsYieldStatement
     {
     }
-    class YieldStep
+    class JsYieldStep
     {
-        public YieldStep()
+        public JsYieldStep()
         {
             Statements = new List<JsStatement>();
         }
