@@ -15,11 +15,8 @@ namespace SharpKit.Compiler
             CollectionExtensions.ParallelPreAction = () => Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
             //Console.AutoFlush = true;
             System.Console.WriteLine("Parallel=" + CollectionExtensions.Parallel);
-            var skc = new CompilerTool { CommandLineArguments = args };
+            var skc = new TargetAwareCompiler { CommandLineArguments = args };
             skc.Init();
-#if DEBUG
-            skc.Debug = true;
-#endif
             var res = skc.Run();
             stopwatch.Stop();
             System.Console.WriteLine("Total: {0}ms", stopwatch.ElapsedMilliseconds);

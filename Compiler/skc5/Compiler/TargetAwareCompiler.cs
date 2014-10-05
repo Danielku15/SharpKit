@@ -81,7 +81,7 @@ namespace SharpKit.Compiler
             try
             {
                 Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
-                SkcVersion = typeof(CompilerTool).Assembly.GetCustomAttribute<AssemblyFileVersionAttribute>().Version;
+                SkcVersion = typeof(TargetAwareCompiler).Assembly.GetCustomAttribute<AssemblyFileVersionAttribute>().Version;
 
                 #region Argument Parsing
 
@@ -319,7 +319,7 @@ namespace SharpKit.Compiler
 
         private Manifest CreateManifest(List<string> externalFiles)
         {
-            return new ManifestHelper { Args = Settings, Log = Log, SkcVersion = SkcVersion, SkcFile = typeof(CompilerTool).Assembly.Location, ExternalFiles = externalFiles }.CreateManifest();
+            return new ManifestHelper { Args = Settings, Log = Log, SkcVersion = SkcVersion, SkcFile = typeof(TargetAwareCompiler).Assembly.Location, ExternalFiles = externalFiles }.CreateManifest();
         }
 
         #endregion

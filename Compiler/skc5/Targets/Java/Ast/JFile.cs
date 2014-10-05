@@ -8,6 +8,7 @@ namespace SharpKit.Java.Ast
     class JFile : TargetFile
     {
         public List<JCompilationUnit> Units { get; set; }
+        public ICompiler Compiler { get; set; }
 
         public JFile()
         {
@@ -37,8 +38,6 @@ namespace SharpKit.Java.Ast
                 }
             }
         }
-        public CompilerTool Compiler { get; set; }
-
     }
 
     partial class JExternalFileUnit : JUnit

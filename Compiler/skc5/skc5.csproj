@@ -105,9 +105,7 @@
     <Compile Include="Compiler\CompilerConfiguration.cs" />
     <Compile Include="Compiler\CompilerLogger.cs" />
     <Compile Include="Compiler\CompilerService.cs" />
-    <Compile Include="Compiler\CompilerTool.cs" />
     <Compile Include="Compiler\CompilerSettings.cs" />
-    <Compile Include="Compiler\CompilerToolCommon.cs" />
     <Compile Include="Compiler\Console.cs" />
     <Compile Include="Targets\JavaScript\Extensions.cs" />
     <Compile Include="Targets\JavaScript\ResolveResultConverter_Invocation.cs" />

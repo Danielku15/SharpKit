@@ -393,8 +393,7 @@ namespace SharpKit.Compiler
             }
         }
 
-        public CompilerTool Compiler { get; set; }
-
+        public ICompiler Compiler { get; set; }
         public List<string> ExternalFiles { get; set; }
     }
     static class Extensions
