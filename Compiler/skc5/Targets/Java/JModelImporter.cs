@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using ICSharpCode.NRefactory.TypeSystem;
 using ICSharpCode.NRefactory.Extensions;
-using SharpKit.Compiler;
 using SharpKit.Java;
 using SharpKit.Java.Ast;
 
@@ -115,7 +114,7 @@ namespace SharpKit.Compiler.Java
             ////export by filenames and order
             //byFile2.ForEachParallel(ExportTypesInFile);
 
-            //JsFiles = byFile2.Keys.ToList();
+            //Files = byFile2.Keys.ToList();
         }
 
         //private void Test()

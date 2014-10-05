@@ -1,32 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
-using System.IO;
-using SharpKit.JavaScript.Ast;
+using System.Threading.Tasks;
+using SharpKit.Compiler;
 using SharpKit.Compiler.SourceMapping;
+using SharpKit.JavaScript.Ast;
 
-namespace SharpKit.Compiler
+namespace SharpKit.Targets.JavaScript
 {
-    public class SkJsFile
+    class SkJsFile : SkFile<JsFile>
     {
-        public override string ToString()
-        {
-            if (JsFile != null && JsFile.Filename.IsNotNullOrEmpty())
-                return JsFile.Filename;
-            return base.ToString();
-        }
         public bool GenerateSourceMap { get; set; }
         public bool Minify { get; set; }
-        public string Format { get; set; }
-
-        public JsFile JsFile { get; set; }
         public string TempFilename { get; set; }
 
-        internal CompilerTool Compiler { get; set; }
-        public void Save()
+        public override void Save()
         {
-            var jsFile = JsFile;
+            var jsFile = TargetFile;
             Compiler.Log.WriteLine("    {0}", jsFile.Filename);
             var ext = Path.GetExtension(jsFile.Filename).ToLower();
             if (TempFilename.IsNullOrEmpty())
@@ -51,7 +43,7 @@ namespace SharpKit.Compiler
                 var smg = new SkSourceMappingGenerator { Compiler = Compiler };
                 smg.TryGenerateAndAddMappingDirective(this);
             }
-            FileUtils.CompareAndSaveFile(jsFile.Filename, TempFilename);
+            FileUtils.CompareAndSaveFile(jsFile.Filename, TempFilename);    
         }
     }
 }

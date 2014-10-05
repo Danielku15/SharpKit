@@ -1,26 +1,36 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.IO;
 using ICSharpCode.NRefactory.TypeSystem;
 using ICSharpCode.NRefactory.CSharp;
 using System.Collections.Concurrent;
-using ICSharpCode.NRefactory;
 using System.Diagnostics;
 using ICSharpCode.NRefactory.Extensions;
 
 namespace SharpKit.Compiler
 {
-
     class CompilerLogger
     {
+        private string _loggingFilename;
+
+        public ConcurrentQueue<CompilerLogItem> Items { get; set; }
+        public Console Console { get; set; }
+
         public CompilerLogger()
         {
             Items = new ConcurrentQueue<CompilerLogItem>();
             Console = new Console { AutoFlush = true };
         }
-        public ConcurrentQueue<CompilerLogItem> Items { get; set; }
+
+        public void Init()
+        {
+            if (CompilerConfiguration.Current.EnableLogging)
+            {
+                _loggingFilename = Process.GetCurrentProcess().MainModule.FileName + ".log";
+                File.Delete(_loggingFilename);
+            }
+        }
+
         public void Log(CompilerLogItem item)
         {
             if (item == null)
@@ -152,22 +162,13 @@ namespace SharpKit.Compiler
                 Debug(s);
         }
 
-        string LoggingFilename;
-        public void Init()
-        {
-            if (CompilerConfiguration.Current.EnableLogging)
-            {
-                LoggingFilename = Process.GetCurrentProcess().MainModule.FileName + ".log";
-                File.Delete(LoggingFilename);
-            }
-        }
+      
         public void Debug(string s)
         {
             if (!CompilerConfiguration.Current.EnableLogging)
                 return;
-            File.AppendAllLines(LoggingFilename, new string[] { s });
+            File.AppendAllLines(_loggingFilename, new string[] { s });
         }
-        public Console Console { get; set; }
     }
 
     class CompilerLogItem
@@ -181,7 +182,6 @@ namespace SharpKit.Compiler
         public int Line { get; set; }
         public int Column { get; set; }
         public string AbsoluteFilename { get; set; }
-
     }
 
     enum CompilerLogItemType

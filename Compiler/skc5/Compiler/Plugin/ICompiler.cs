@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using ICSharpCode.NRefactory.Semantics;
 using ICSharpCode.NRefactory.CSharp;
 using SharpKit.Compiler.Ast;
-using SharpKit.JavaScript.Ast;
 using ICSharpCode.NRefactory.TypeSystem;
 
 namespace SharpKit.Compiler
@@ -29,10 +26,10 @@ namespace SharpKit.Compiler
         event Action BeforeParseCs;
         event Action BeforeApplyExternalMetadata;
         event Action BeforeConvertCsToTarget;
-        event Action BeforeMergeJsFiles;
-        event Action BeforeInjectJsCode;
-        event Action BeforeOptimizeJsFiles;
-        event Action BeforeSaveJsFiles;
+        event Action BeforeMergeTargetFiles;
+        event Action BeforeInjectTargetCode;
+        event Action BeforeOptimizeTargetFiles;
+        event Action BeforeSaveTargetFiles;
         event Action BeforeEmbedResources;
         event Action BeforeSaveNewManifest;
         event Action BeforeExit;
@@ -40,10 +37,10 @@ namespace SharpKit.Compiler
         event Action AfterParseCs;
         event Action AfterApplyExternalMetadata;
         event Action AfterConvertCsToTarget;
-        event Action AfterMergeJsFiles;
-        event Action AfterInjectJsCode;
-        event Action AfterOptimizeJsFiles;
-        event Action AfterSaveJsFiles;
+        event Action AfterMergeTargetFiles;
+        event Action AfterInjectTargetCode;
+        event Action AfterOptimizeTargetFiles;
+        event Action AfterSaveTargetFiles;
         event Action AfterEmbedResources;
         event Action AfterSaveNewManifest;
 
@@ -62,8 +59,9 @@ namespace SharpKit.Compiler
         #region Properties
 
         ICompilation CsCompilation { get; }
-        List<SkJsFile> SkJsFiles { get; }
+        List<SkFile> SkFiles { get; }
         ICustomAttributeProvider CustomAttributeProvider { get; }
+
         #endregion
 
     }

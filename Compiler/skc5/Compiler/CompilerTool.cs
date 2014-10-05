@@ -17,9 +17,10 @@ using Mono.Cecil;
 using System.Collections;
 using System.Xml.Linq;
 using ICSharpCode.NRefactory.CSharp;
+using SharpKit.Targets.Ast;
+using SharpKit.Targets.JavaScript;
 using SharpKit.Utils.Http;
 using Corex.Helpers;
-using System.ServiceProcess;
 using Corex.IO.Tools;
 using SharpKit.Compiler.CsToJs;
 
@@ -119,7 +120,7 @@ namespace SharpKit.Compiler
         #region Properties
         //public static CompilerTool Current { get; set; }
         public CompilerToolArgs Args { get; set; }
-        public List<SkJsFile> SkJsFiles { get; set; }
+        public List<SkFile> SkFiles { get; set; }
         public CompilerLogger Log { get; set; }
         public SkProject Project { get; set; }
         public List<string> Defines { get; set; }
@@ -133,10 +134,10 @@ namespace SharpKit.Compiler
         public JsStatement RemoveDelegateSupportStatement { get; set; }
         public JsStatement CreateMulticastDelegateFunctionSupportStatement { get; set; }
         public SkSourceMappingGenerator SourceMapsGenerator { get; set; }
-        public SkJsFile CodeInjectionFile { get; set; }
+        public SkFile CodeInjectionFile { get; set; }
         public List<string> EmbeddedResourceFiles { get; set; }
         public string VersionKey { get; set; }
-        public FileMerger FileMerger { get; set; }
+        public JsFileMerger JsFileMerger { get; set; }
         public PathMerger PathMerger { get; set; }
 
         #endregion
@@ -443,7 +444,7 @@ namespace SharpKit.Compiler
         {
 
             TriggerEvent(BeforeSaveNewManifest);
-            CreateManifest(FileMerger.ExternalJsFiles.Select(t => t.JsFile.Filename).Concat(EmbeddedResourceFiles).ToList()).SaveToFile(Args.ManifestFile);
+            CreateManifest(JsFileMerger.ExternalFiles.Select(t => t.TargetFile.Filename).Concat(EmbeddedResourceFiles).ToList()).SaveToFile(Args.ManifestFile);
 
             TriggerEvent(AfterSaveNewManifest);
         }
@@ -459,7 +460,7 @@ namespace SharpKit.Compiler
 
         bool CheckManifest()
         {
-            if (Args.rebuild.GetValueOrDefault())
+            if (Args.Rebuild.GetValueOrDefault())
                 return false;
             if (!File.Exists(Args.ManifestFile))
                 return false;
@@ -609,14 +610,14 @@ namespace SharpKit.Compiler
 
 
             TypeConverter.Process();
-            SkJsFiles = TypeConverter.JsFiles.Select(ToSkJsFile).ToList();
+            SkFiles = TypeConverter.JsFiles.Select(ToSkJsFile).ToList();
 
             TriggerEvent(AfterConvertCsToTarget);
         }
 
-        private SkJsFile ToSkJsFile(JsFile t)
+        private SkFile ToSkJsFile(JsFile t)
         {
-            return new SkJsFile { JsFile = t, Compiler = this };
+            return new SkJsFile { TargetFile = t, Compiler = this };
         }
 
         void JsModelImporter_ConfigureJsTypeImporter(MemberConverter obj)
@@ -658,23 +659,23 @@ namespace SharpKit.Compiler
         void MergeJsFiles()
         {
 
-            TriggerEvent(BeforeMergeJsFiles);
-            FileMerger = new FileMerger { Project = Project, JsFiles = SkJsFiles, Log = Log, Compiler = this };
+            TriggerEvent(BeforeMergeTargetFiles);
+            JsFileMerger = new JsFileMerger { Project = Project, Files = SkFiles.OfType<SkJsFile>().ToList(), Log = Log, Compiler = this };
             Time(GenerateCodeInjectionFile);
 
-            FileMerger.MergeFiles();
+            JsFileMerger.MergeFiles();
             if (Args.OutputGeneratedJsFile.IsNotNullOrEmpty())
             {
-                var file = FileMerger.GetJsFile(Args.OutputGeneratedJsFile, false);
-                FileMerger.MergeFiles(file, SkJsFiles.Where(t => t != file).ToList());
-                SkJsFiles.Clear();
-                SkJsFiles.Add(file);
+                var file = JsFileMerger.GetJsFile(Args.OutputGeneratedJsFile, false);
+                JsFileMerger.MergeFiles(file, SkFiles.OfType<SkJsFile>().Where(t => t != file).ToList());
+                SkFiles.Clear();
+                SkFiles.Add(file);
             }
 
             ApplyJsMinifyAndSourceMap();
 
 
-            TriggerEvent(AfterMergeJsFiles);
+            TriggerEvent(AfterMergeTargetFiles);
         }
 
         void ApplyJsMinifyAndSourceMap()
@@ -683,9 +684,9 @@ namespace SharpKit.Compiler
             if (att != null)
             {
                 if (att.Minify)
-                    SkJsFiles.ForEach(t => t.Minify = true);
+                    SkFiles.OfType<SkJsFile>().ForEach(t => t.Minify = true);
                 if (att.GenerateSourceMaps)
-                    SkJsFiles.ForEach(t => t.GenerateSourceMap = true);
+                    SkFiles.OfType<SkJsFile>().ForEach(t => t.GenerateSourceMap = true);
             }
         }
 
@@ -723,7 +724,7 @@ namespace SharpKit.Compiler
             if (methods.Length == 0)
                 return usage;
             var list = new HashSet<string>(methods);
-            foreach (var unit in file.JsFile.Units)
+            foreach (var unit in file.TargetFile.Units)
             {
                 foreach (var node in unit.Descendants<JsInvocationExpression>())
                 {
@@ -750,30 +751,30 @@ namespace SharpKit.Compiler
                 {
                     headerUnit.Statements.Add(ci.JsStatement);
                 }
-                CodeInjectionFile.JsFile.Units.Insert(0, headerUnit);
+                ((SkJsFile)CodeInjectionFile).TargetFile.Units.Insert(0, headerUnit);
             }
         }
 
-        SkJsFile GetCreateSkJsFile(string filename)
+        SkFile GetCreateSkJsFile(string filename)
         {
-            return FileMerger.GetJsFile(filename, false);
-            //return SkJsFiles.Where(t => t.JsFile.Filename.EqualsIgnoreCase(filename)).FirstOrDefault();
+            return JsFileMerger.GetJsFile(filename, false);
+            //return SkFiles.Where(t => t.JsFile.Filename.EqualsIgnoreCase(filename)).FirstOrDefault();
         }
 
         void InjectJsCode()
         {
 
-            TriggerEvent(BeforeInjectJsCode);
-            if (SkJsFiles.IsNotNullOrEmpty())
+            TriggerEvent(BeforeInjectTargetCode);
+            if (SkFiles.IsNotNullOrEmpty())
             {
                 var helperMethods = CodeInjections.Select(t => t.FunctionName).ToArray();
-                foreach (var file in SkJsFiles)
+                foreach (var file in SkFiles.OfType<SkJsFile>())
                 {
-                    if (file.JsFile == null || file.JsFile.Units.IsNullOrEmpty())
+                    if (file.TargetFile == null || file.TargetFile.Units.IsNullOrEmpty())
                         continue;
                     if (file == CodeInjectionFile)
                         continue;
-                    var jsFile = file.JsFile;
+                    var jsFile = file.TargetFile;
                     var ext = Path.GetExtension(jsFile.Filename).ToLower();
                     if (ext == ".js")
                     {
@@ -798,7 +799,7 @@ namespace SharpKit.Compiler
                 }
             }
 
-            TriggerEvent(AfterInjectJsCode);
+            TriggerEvent(AfterInjectTargetCode);
         }
 
         #endregion
@@ -806,7 +807,7 @@ namespace SharpKit.Compiler
         #region ValidateUnits
         void ValidateUnits()
         {
-            SkJsFiles.Select(t => t.JsFile).ToList().ForEach(ValidateUnits);
+            SkFiles.OfType<SkJsFile>().Select(t => t.TargetFile).ToList().ForEach(ValidateUnits);
         }
         void ValidateUnits(JsFile file)
         {
@@ -831,13 +832,13 @@ namespace SharpKit.Compiler
             var st = TypeConverter.ClrConverter.VerifyJsTypesArrayStatement;
             if (st == null)
                 return;
-            if (SkJsFiles.IsNullOrEmpty())
+            if (SkFiles.IsNullOrEmpty())
                 return;
-            foreach (var file in SkJsFiles)
+            foreach (var file in SkFiles.OfType<SkJsFile>())
             {
-                if (file.JsFile == null || file.JsFile.Units == null)
+                if (file.TargetFile == null || file.TargetFile.Units == null)
                     continue;
-                foreach (var unit in file.JsFile.Units)
+                foreach (var unit in file.TargetFile.Units)
                 {
                     if (unit.Statements == null)
                         continue;
@@ -849,22 +850,22 @@ namespace SharpKit.Compiler
         void OptimizeJsFiles()
         {
 
-            TriggerEvent(BeforeOptimizeJsFiles);
+            TriggerEvent(BeforeOptimizeTargetFiles);
             OptimizeClrJsTypesArrayVerification();
             OptimizeNamespaceVerification();
 
-            TriggerEvent(AfterOptimizeJsFiles);
+            TriggerEvent(AfterOptimizeTargetFiles);
         }
 
         void OptimizeNamespaceVerification()
         {
-            if (SkJsFiles.IsNullOrEmpty())
+            if (SkFiles.IsNullOrEmpty())
                 return;
-            foreach (var file in SkJsFiles)
+            foreach (var file in SkFiles.OfType<SkJsFile>())
             {
-                if (file.JsFile == null || file.JsFile.Units.IsNullOrEmpty())
+                if (file.TargetFile == null || file.TargetFile.Units.IsNullOrEmpty())
                     continue;
-                foreach (var unit in file.JsFile.Units)
+                foreach (var unit in file.TargetFile.Units)
                 {
                     OptimizeNamespaceVerification(unit);
                 }
@@ -890,17 +891,17 @@ namespace SharpKit.Compiler
 
         void SaveJsFiles()
         {
-            TriggerEvent(BeforeSaveJsFiles);
+            TriggerEvent(BeforeSaveTargetFiles);
             var att = GetJsExportAttribute();
             string format = null;
             if (att != null)
                 format = att.JsCodeFormat;
-            foreach (var file in SkJsFiles)
+            foreach (var file in SkFiles)
             {
                 file.Format = format;
                 file.Save();
             }
-            TriggerEvent(AfterSaveJsFiles);
+            TriggerEvent(AfterSaveTargetFiles);
         }
 
         void EmbedResources()
@@ -1047,20 +1048,20 @@ namespace SharpKit.Compiler
         public event Action BeforeParseCs;
         public event Action BeforeApplyExternalMetadata;
         public event Action BeforeConvertCsToTarget;
-        public event Action BeforeMergeJsFiles;
-        public event Action BeforeInjectJsCode;
-        public event Action BeforeOptimizeJsFiles;
-        public event Action BeforeSaveJsFiles;
+        public event Action BeforeMergeTargetFiles;
+        public event Action BeforeInjectTargetCode;
+        public event Action BeforeOptimizeTargetFiles;
+        public event Action BeforeSaveTargetFiles;
         public event Action BeforeEmbedResources;
         public event Action BeforeSaveNewManifest;
 
         public event Action AfterParseCs;
         public event Action AfterApplyExternalMetadata;
         public event Action AfterConvertCsToTarget;
-        public event Action AfterMergeJsFiles;
-        public event Action AfterInjectJsCode;
-        public event Action AfterOptimizeJsFiles;
-        public event Action AfterSaveJsFiles;
+        public event Action AfterMergeTargetFiles;
+        public event Action AfterInjectTargetCode;
+        public event Action AfterOptimizeTargetFiles;
+        public event Action AfterSaveTargetFiles;
         public event Action AfterEmbedResources;
         public event Action AfterSaveNewManifest;
 

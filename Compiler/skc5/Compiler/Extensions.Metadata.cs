@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using ICSharpCode.NRefactory.TypeSystem;
 using ICSharpCode.NRefactory.Semantics;
 using Mirrored.SharpKit.JavaScript;
@@ -10,9 +9,8 @@ using ICSharpCode.NRefactory.Extensions;
 
 namespace SharpKit.Compiler
 {
-    static class Extensions_Metadata
+    static class MetadataExtensions
     {
-
         public static T GetMetadataWithCache<T>(this IEnumerable<ResolvedAttribute> list, IEntity me) where T : Attribute
         {
             var ext = me.GetExtension(true);
@@ -37,24 +35,27 @@ namespace SharpKit.Compiler
                 return default(T);
             return me.GetAllResolvedAttributes().GetMetadataWithCache<T>(me);
         }
+
         public static T GetMetadata<T>(this IEntity me, bool inherit) where T : Attribute
         {
             return me.GetMetadatas<T>(inherit).FirstOrDefault();
         }
+
         public static T GetMetadata<T>(this IAssembly me) where T : Attribute
         {
             return me.GetExtension(true).ResolvedAttributes.GetMetadata<T>();
         }
+
         public static IEnumerable<T> GetMetadatas<T>(this IEnumerable<ResolvedAttribute> list) where T : Attribute
         {
             return list.FindByType<T>().Select(t => t.ConvertToCustomAttribute<T>()).Where(t => t != null);
         }
 
-
         public static IEnumerable<T> GetMetadatas<T>(this IEntity me) where T : Attribute
         {
             return me.GetExtension(true).AllResolvedAttributes.GetMetadatas<T>();
         }
+
         public static IEnumerable<T> GetMetadatas<T>(this IEntity me, bool inherit) where T : Attribute
         {
             if (inherit)
@@ -81,9 +82,8 @@ namespace SharpKit.Compiler
             return asm.GetExtension(true).ResolvedAttributes.GetMetadatas<T>();
         }
 
-
-
         #region Direct, low-level, slow
+        
         //public static T GetDirectMetadata<T>(this IEnumerable<IAttribute> list) where T : Attribute
         //{
         //    return list.GetDirectMetadatas<T>().FirstOrDefault();

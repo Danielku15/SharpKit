@@ -1,7 +1,7 @@
 using System.Text;
 using System.Collections.Generic;
 using System;
-using System.Collections;
+
 namespace SharpKit.Compiler.SourceMapping
 {
     class Base64VLQ

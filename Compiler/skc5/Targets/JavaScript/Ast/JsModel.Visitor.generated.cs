@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 namespace SharpKit.JavaScript.Ast
 {
     partial class JsNode

@@ -1,13 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using ICSharpCode.NRefactory.TypeSystem;
-using SharpKit.Compiler;
-using SharpKit.Utils;
-using System.CodeDom.Compiler;
 using System.IO;
-using Mirrored.SharpKit.JavaScript;
 using SharpKit.JavaScript.Ast;
 using ICSharpCode.NRefactory.Extensions;
 

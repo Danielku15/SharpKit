@@ -1,9 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using ICSharpCode.NRefactory.TypeSystem;
 using SharpKit.Compiler.Ast;
 using SharpKit.JavaScript.Ast;

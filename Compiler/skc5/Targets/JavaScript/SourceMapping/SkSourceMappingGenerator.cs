@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using SharpKit.JavaScript.Ast;
 using System.IO;
-using System.Runtime.Serialization;
 using ICSharpCode.NRefactory.CSharp;
+using SharpKit.Targets.JavaScript;
+
 namespace SharpKit.Compiler.SourceMapping
 {
     class SkSourceMappingGenerator
@@ -25,7 +25,7 @@ namespace SharpKit.Compiler.SourceMapping
             if (Generate(file))
             {
                 var generatedFilename = file.TempFilename;
-                var mappingFilename = GetSourceMapFilename(file.JsFile.Filename);
+                var mappingFilename = GetSourceMapFilename(file.TargetFile.Filename);
 
                 AddMappingDirective(generatedFilename, mappingFilename);
             }
@@ -34,9 +34,9 @@ namespace SharpKit.Compiler.SourceMapping
         {
             //if (skFile.Minify)
             //    return false;
-            if (skFile.JsFile == null)
+            if (skFile.TargetFile == null)
                 return false;
-            var file = skFile.JsFile;
+            var file = skFile.TargetFile;
             if (file.Units.IsNullOrEmpty())
                 return false;
             return true;
@@ -47,7 +47,7 @@ namespace SharpKit.Compiler.SourceMapping
         }
         public bool Generate(SkJsFile skFile)
         {
-            var file = skFile.JsFile;
+            var file = skFile.TargetFile;
             var doc = new SourceMappingDocument { Mappings = new List<SourceMappingItem>() };
             var generatedFilename = file.Filename;
             var mappingFilename = GetSourceMapFilename(generatedFilename);

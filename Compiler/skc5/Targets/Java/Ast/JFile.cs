@@ -1,32 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.IO;
-using SharpKit.Compiler.Java;
 using SharpKit.Compiler;
+using SharpKit.Targets.Ast;
 
 namespace SharpKit.Java.Ast
 {
-    class JFile
+    class JFile : TargetFile
     {
+        public List<JCompilationUnit> Units { get; set; }
+
         public JFile()
         {
             Units = new List<JCompilationUnit>();
         }
-        public string Filename { get; set; }
-        public List<JCompilationUnit> Units { get; set; }
 
-        public void CompareAndSave()
-        {
-            var tmpFile = Filename + ".tmp";
-            SaveAs(tmpFile);
-            FileUtils.CompareAndSaveFile(Filename, tmpFile);
-
-
-        }
-
-        public void SaveAs(string filename)
+        public override void SaveAs(string filename)
         {
             var tmpFile = filename;
             using (var writer = JWriter.Create(tmpFile, false))

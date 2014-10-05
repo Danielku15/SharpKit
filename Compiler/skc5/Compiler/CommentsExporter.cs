@@ -1,37 +1,35 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Text;
-using ICSharpCode.NRefactory.TypeSystem;
-using System.CodeDom.Compiler;
 using ICSharpCode.NRefactory.CSharp;
 
 namespace SharpKit.Compiler
 {
     class CommentsExporter
     {
-        int CurrentTokenIndex = -1;
+        private int _currentTokenIndex = -1;
+
+        public List<AstNode> Nodes { get; set; }
 
         public List<string> ExportAllLeftoverComments()
         {
             return ExportCommentsUptoNode(null);//MaxLine.GetValueOrDefault(int.MaxValue));
         }
-        public List<AstNode> Nodes { get; set; }
+
         public List<string> ExportCommentsUptoNode(AstNode stopNode)
         {
-            if (CurrentTokenIndex == -1)
-                CurrentTokenIndex = 0;
+            if (_currentTokenIndex == -1)
+                _currentTokenIndex = 0;
             var sb = new StringBuilder();
             var started = false;
             var lines = new List<string>();
-            while (CurrentTokenIndex < Nodes.Count)
+            while (_currentTokenIndex < Nodes.Count)
             {
-                var token = Nodes[CurrentTokenIndex];
+                var token = Nodes[_currentTokenIndex];
                 if (token == stopNode)
                     break;
-                if (token is Comment)
+                var cmt = token as Comment;
+                if (cmt != null)
                 {
-                    var cmt = (Comment)token;
                     started = true;
                     if (cmt.CommentType == CommentType.SingleLine)
                     {
@@ -44,7 +42,7 @@ namespace SharpKit.Compiler
                     lines.Add(sb.ToString());
                     sb.Clear();
                 }
-                CurrentTokenIndex++;
+                _currentTokenIndex++;
             }
             if (started && sb.Length > 0)
             {
@@ -52,6 +50,5 @@ namespace SharpKit.Compiler
             }
             return lines;
         }
-
     }
 }

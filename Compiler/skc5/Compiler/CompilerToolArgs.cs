@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.IO;
 using Corex.IO.Tools;
 
@@ -9,24 +6,10 @@ namespace SharpKit.Compiler
 {
     class CompilerToolArgs
     {
-        public CompilerToolArgs()
-        {
-            Files = new List<string>();
-            References = new List<string>();
-            ContentFiles = new List<string>();
-            NoneFiles = new List<string>();
-            ResourceFiles = new List<string>();
-        }
         static ToolArgsInfo<CompilerToolArgs> Info = new ToolArgsInfo<CompilerToolArgs> { Error = System.Console.WriteLine };
-        public static CompilerToolArgs Parse(string[] args)
-        {
-            return Info.Parse(args);
-        }
-        public static void GenerateHelp(TextWriter writer)
-        {
-            Info.HelpGenerator.Generate(writer);
 
-        }
+        private string _assemblyName;
+
         [ToolArgCommand]
         public List<string> Files { get; private set; }
 
@@ -62,9 +45,12 @@ namespace SharpKit.Compiler
         [ToolArgSwitch("nonefile")]
         public List<string> NoneFiles { get; private set; }
 
-        public bool why { get; set; }
+        [ToolArgSwitch("why")]
+        public bool Why { get; set; }
 
-        public bool? rebuild { get; set; }
+        [ToolArgSwitch("rebuild")]
+        public bool? Rebuild { get; set; }
+
         public bool? Enabled { get; set; }
         public bool? ExportToCSharp { get; set; }
         public bool? DebuggerBreak { get; set; }
@@ -89,18 +75,11 @@ namespace SharpKit.Compiler
         [ToolArgSwitch("filealign")]
         public int filealign { get; set; }
 
-        private string _AssemblyName;
         public string AssemblyName
         {
-            get
-            {
-                if (_AssemblyName == null)
-                {
-                    _AssemblyName = Path.GetFileNameWithoutExtension(Output);
-                }
-                return _AssemblyName;
-            }
+            get { return _assemblyName ?? (_assemblyName = Path.GetFileNameWithoutExtension(Output)); }
         }
+
         public string ManifestFile { get; set; }
 
         public string CodeAnalysisFile { get; set; }
@@ -129,5 +108,23 @@ namespace SharpKit.Compiler
 
         public bool LastArgs { get; set; }
 
+        public CompilerToolArgs()
+        {
+            Files = new List<string>();
+            References = new List<string>();
+            ContentFiles = new List<string>();
+            NoneFiles = new List<string>();
+            ResourceFiles = new List<string>();
+        }
+
+        public static CompilerToolArgs Parse(string[] args)
+        {
+            return Info.Parse(args);
+        }
+        
+        public static void GenerateHelp(TextWriter writer)
+        {
+            Info.HelpGenerator.Generate(writer);
+        }
     }
 }

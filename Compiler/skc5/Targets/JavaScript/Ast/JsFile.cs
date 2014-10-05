@@ -1,30 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.IO;
 using SharpKit.Compiler;
+using SharpKit.Targets.Ast;
 
 namespace SharpKit.JavaScript.Ast
 {
-    public class JsFile
+    public class JsFile : TargetFile
     {
-        public string Filename { get; set; }
         public List<JsUnit> Units { get; set; }
 
-        public void CompareAndSave()
-        {
-            var tmpFile = Filename + ".tmp";
-            SaveAs(tmpFile);
-            FileUtils.CompareAndSaveFile(Filename, tmpFile);
-
-
-        }
-
-        public void SaveAs(string filename)
+        public override void SaveAs(string filename)
         {
             SaveAs(filename, null, null);
         }
+
         internal void SaveAs(string filename, string format, CompilerTool compiler)
         {
             var tmpFile = filename;
@@ -68,8 +57,6 @@ namespace SharpKit.JavaScript.Ast
                 }
             }
         }
-
-
     }
 
     public partial class JsExternalFileUnit : JsUnit

@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Mirrored.SharpKit.JavaScript;
 using System.IO;
 using ICSharpCode.NRefactory.TypeSystem;
@@ -11,7 +9,6 @@ namespace SharpKit.Compiler
 {
     static class Sk
     {
-
         public static bool NewInterfaceImplementation = false; //New interface implementation
 
         public static string DirectorySeparator = Path.DirectorySeparatorChar.ToString();
@@ -39,6 +36,7 @@ namespace SharpKit.Compiler
             }
             return path;
         }
+
         private static string GetDefaultJsFilename(ITypeDefinition ce)
         {
             var asm = ce.ParentAssembly;

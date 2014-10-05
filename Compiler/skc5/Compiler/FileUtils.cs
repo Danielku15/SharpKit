@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.IO;
+﻿using System.IO;
 
 namespace SharpKit.Compiler
 {
     class FileUtils
     {
-
         public static void CompareAndSaveFile(string file, string tmpFile)
         {
             var fi = new FileInfo(file);

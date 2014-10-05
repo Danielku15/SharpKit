@@ -1,16 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using ICSharpCode.NRefactory.TypeSystem;
 using Mirrored.SharpKit.JavaScript;
 using System.IO;
-using System.Collections;
 using SharpKit.JavaScript.Ast;
-using ICSharpCode.NRefactory.TypeSystem.Implementation;
-using ICSharpCode.NRefactory.CSharp;
 using ICSharpCode.NRefactory.Extensions;
-using SharpKit.Compiler.CsToJs;
 using SharpKit.TypeScript;
 
 namespace SharpKit.Compiler.CsToJs

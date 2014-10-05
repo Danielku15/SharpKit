@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Configuration;
+﻿using System.Configuration;
 using System.Collections.Specialized;
 
 namespace SharpKit.Compiler
@@ -16,12 +12,12 @@ namespace SharpKit.Compiler
         public bool CreateNativeImage { get; set; }
         public string SharpKitServiceUrl { get; set; }
         //public string LogFilename { get; set; }
+
         public static void LoadCurrent()
         {
             var x = new CompilerConfiguration();
             x.Load(ConfigurationManager.AppSettings);
             Current = x;
-
         }
 
         private void Load(NameValueCollection x)
@@ -31,7 +27,6 @@ namespace SharpKit.Compiler
             EnableLogging = x["EnableLogging"] == "true";
             CreateNativeImage = x["CreateNativeImage"] == "true";
             SharpKitServiceUrl = x["SharpKitServiceUrl"] ?? "http://localhost:7667/";
-
         }
     }
 }

@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System;
 
 /*
  * Copyright 2011 The Closure Compiler Authors.

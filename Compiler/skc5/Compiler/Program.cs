@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using ICSharpCode.NRefactory.TypeSystem;
-using System.IO;
-using System.CodeDom.Compiler;
-using Mirrored.SharpKit.JavaScript;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Configuration;
 using System.Threading;
 using System.Globalization;
@@ -33,10 +25,6 @@ namespace SharpKit.Compiler
             System.Console.WriteLine("Total: {0}ms", stopwatch.ElapsedMilliseconds);
             //System.Console.Flush();
             return res;
-
         }
-
     }
-
-
 }

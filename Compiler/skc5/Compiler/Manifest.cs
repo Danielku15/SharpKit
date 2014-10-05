@@ -11,14 +11,6 @@ namespace SharpKit.Compiler
     [Serializable]
     class Manifest
     {
-        public Manifest()
-        {
-            ExternalFiles = new List<ManifestFile>();
-            SourceFiles = new List<ManifestFile>();
-            ContentFiles = new List<ManifestFile>();
-            ReferencedFiles = new List<ManifestFile>();
-            NoneFiles = new List<ManifestFile>();
-        }
         public string SkcVersion { get; set; }
         public ManifestFile SkcFile { get; set; }
         public string DefinedSymbols { get; set; }
@@ -29,6 +21,15 @@ namespace SharpKit.Compiler
         public List<ManifestFile> NoneFiles { get; set; }
         public List<ManifestFile> ExternalFiles { get; set; }
 
+        public Manifest()
+        {
+            ExternalFiles = new List<ManifestFile>();
+            SourceFiles = new List<ManifestFile>();
+            ContentFiles = new List<ManifestFile>();
+            ReferencedFiles = new List<ManifestFile>();
+            NoneFiles = new List<ManifestFile>();
+        }
+
         public void SaveToFile(string filename)
         {
             var dir = Path.GetDirectoryName(filename);
@@ -36,6 +37,7 @@ namespace SharpKit.Compiler
                 Directory.CreateDirectory(dir);
             new XSerializer().SerializeToFile(this, filename);
         }
+
         public static Manifest LoadFromFile(string filename)
         {
             try
@@ -47,6 +49,7 @@ namespace SharpKit.Compiler
                 return new Manifest();
             }
         }
+
         public ManifestDiff GetManifestDiff(Manifest other)
         {
             var ret = new ManifestDiff();

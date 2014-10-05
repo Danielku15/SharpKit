@@ -1,30 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using ICSharpCode.NRefactory.TypeSystem;
 using Mirrored.SharpKit.JavaScript;
 using System.IO;
-using System.Collections;
-using System.Diagnostics;
-using ICSharpCode.NRefactory.CSharp;
 using SharpKit.JavaScript.Ast;
+using SharpKit.Targets.JavaScript;
 
 namespace SharpKit.Compiler
 {
-    class FileMerger
+    class JsFileMerger
     {
-        public FileMerger()
+        public JsFileMerger()
         {
-            ExternalJsFiles = new List<SkJsFile>();
+            ExternalFiles = new List<SkJsFile>();
         }
         public CompilerTool Compiler { get; set; }
         public SkProject Project { get; set; }
         /// <summary>
         /// This collection may be updated to include new files
         /// </summary>
-        public List<SkJsFile> JsFiles { get; set; }
-        public List<SkJsFile> ExternalJsFiles { get; set; }
+        public List<SkJsFile> Files { get; set; }
+        public List<SkJsFile> ExternalFiles { get; set; }
         public CompilerLogger Log { get; set; }
         public void MergeFiles()
         {
@@ -36,17 +33,6 @@ namespace SharpKit.Compiler
             }
         }
 
-        JsFile CreateExternalJsFile(string filename)
-        {
-            var unit = new JsUnit { Statements = new List<JsStatement>() };
-            var st = new JsCodeStatement
-            {
-                Code = File.ReadAllText(filename)
-            };
-            var file = new JsFile { Filename = filename, Units = new List<JsUnit> { unit } };
-            unit.Statements.Add(st);
-            return file;
-        }
         bool FileEquals(string file1, string file2)
         {
             return Path.GetFullPath(file1).EqualsIgnoreCase(Path.GetFullPath(file2));
@@ -55,24 +41,25 @@ namespace SharpKit.Compiler
         public SkJsFile GetJsFile(string filename, bool isExternal)
         {
             filename = filename.Replace("/", Sk.DirectorySeparator);
-            var file = JsFiles.Where(t => FileEquals(t.JsFile.Filename, filename)).FirstOrDefault();
+            var file = Files.Where(t => FileEquals(t.TargetFile.Filename, filename)).FirstOrDefault();
             if (file == null)
-                file = ExternalJsFiles.Where(t => FileEquals(t.JsFile.Filename, filename)).FirstOrDefault();
+                file = ExternalFiles.Where(t => FileEquals(t.TargetFile.Filename, filename)).FirstOrDefault();
             if (file == null)
             {
-                file = new SkJsFile { JsFile = new JsFile { Filename = filename, Units = new List<JsUnit>() }, Compiler = Compiler };
+                file = new SkJsFile { TargetFile = new JsFile { Filename = filename, Units = new List<JsUnit>() }, Compiler = Compiler };
                 if (isExternal)
                 {
-                    file.JsFile.Units.Add(new JsExternalFileUnit { Filename = filename });
-                    ExternalJsFiles.Add(file);
+                    file.TargetFile.Units.Add(new JsExternalFileUnit { Filename = filename });
+                    ExternalFiles.Add(file);
                 }
                 else
                 {
-                    JsFiles.Add(file);
+                    Files.Add(file);
                 }
             }
             return file;
         }
+
         void MergeFiles(string target, string[] sources, bool minify)
         {
             var target2 = GetJsFile(target, false);
@@ -86,7 +73,7 @@ namespace SharpKit.Compiler
         {
             foreach (var source2 in sources)
             {
-                target.JsFile.Units.AddRange(source2.JsFile.Units);
+                target.TargetFile.Units.AddRange(source2.TargetFile.Units);
             }
         }
 

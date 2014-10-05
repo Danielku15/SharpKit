@@ -2,13 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.CodeDom.Compiler;
 using ICSharpCode.NRefactory.TypeSystem;
-using Mirrored.SharpKit.JavaScript;
-using SharpKit.Utils;
-using System.IO;
-using System.Collections;
-using System.Diagnostics;
 using ICSharpCode.NRefactory.Semantics;
 using SharpKit.JavaScript.Ast;
 using ICSharpCode.NRefactory.Extensions;

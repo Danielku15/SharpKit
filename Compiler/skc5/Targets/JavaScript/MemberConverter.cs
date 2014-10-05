@@ -2,10 +2,6 @@
 using System.Collections.Generic;
 using System.Collections;
 using System.Linq;
-using System.Text;
-using SharpKit.Compiler;
-using SharpKit.Utils;
-using System.CodeDom.Compiler;
 using Mirrored.SharpKit.JavaScript;
 using System.Diagnostics;
 using ICSharpCode.NRefactory.TypeSystem;
@@ -14,9 +10,7 @@ using ICSharpCode.NRefactory.TypeSystem.Implementation;
 using ICSharpCode.NRefactory.Semantics;
 using ICSharpCode.NRefactory.CSharp.Resolver;
 using SharpKit.JavaScript.Ast;
-using ICSharpCode.NRefactory.CSharp.TypeSystem;
 using ICSharpCode.NRefactory.Extensions;
-using SharpKit.Compiler.CsToJs;
 
 namespace SharpKit.Compiler.CsToJs
 {

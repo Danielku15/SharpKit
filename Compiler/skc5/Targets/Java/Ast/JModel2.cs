@@ -1,6 +1,5 @@
 ﻿using Corex.Collections.Generic;
 using ICSharpCode.NRefactory.TypeSystem;
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 namespace SharpKit.Java.Ast

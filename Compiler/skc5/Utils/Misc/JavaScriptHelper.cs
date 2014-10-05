@@ -1,14 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using SharpKit.Utils;
 using System.ComponentModel;
-using System.Globalization;
 using System.Collections;
 using System.Diagnostics;
 using System.IO;
-using Microsoft.CSharp;
-using System.CodeDom;
 
 namespace SharpKit.Utils
 {

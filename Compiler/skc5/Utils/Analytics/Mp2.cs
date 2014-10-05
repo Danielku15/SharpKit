@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Net;
-
-namespace SharpKit.Utils.Analytics
+﻿namespace SharpKit.Utils.Analytics
 {
     class Mp
     {

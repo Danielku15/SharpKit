@@ -12,8 +12,6 @@ namespace SharpKit.Compiler
 
     interface ICsExternalMetadata
     {
-        CompilerLogger Log { get; set; }
-        SkProject Project { get; set; }
         IEnumerable<ITypeDefinition> TypesWithExternalAttributes { get; }
 
         void Process();

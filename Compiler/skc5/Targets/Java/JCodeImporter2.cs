@@ -4,7 +4,6 @@ using System.Linq;
 using ICSharpCode.NRefactory.CSharp;
 using ICSharpCode.NRefactory.TypeSystem;
 using ICSharpCode.NRefactory.Extensions;
-using SharpKit.Compiler;
 using SharpKit.Java;
 using SharpKit.Java.Ast;
 

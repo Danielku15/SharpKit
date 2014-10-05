@@ -1,14 +1,7 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Net;
-using System.Reflection;
 using System.Runtime.Serialization;
-using System.Runtime.Serialization.Json;
-using System.Text;
-using System.Threading.Tasks;
 using Corex.IO.Tools;
 using ICSharpCode.NRefactory.CSharp;
 using ICSharpCode.NRefactory.Extensions;
@@ -24,8 +17,8 @@ namespace SharpKit.Compiler
             new NFile();
             new CSharpParser();
             AssemblyLoader.Create();
-
         }
+
         public CompileResponse Compile(CompileRequest req)
         {
             var skc = new CompilerTool
@@ -41,7 +34,6 @@ namespace SharpKit.Compiler
             var x = skc.Run();
             var xx = new CompileResponse { Output = skc.Log.Console.Items.ToList(), ExitCode = x };
             return xx;
-
         }
 
         public void Test()
@@ -58,6 +50,7 @@ namespace SharpKit.Compiler
         [DataMember]
         public CompilerToolArgs Args { get; set; }
     }
+
     [DataContract]
     class CompileResponse
     {
@@ -66,5 +59,4 @@ namespace SharpKit.Compiler
         [DataMember]
         public int ExitCode { get; set; }
     }
-
 }

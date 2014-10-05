@@ -6,7 +6,6 @@ using System.IO;
 using System.Diagnostics;
 using Corex.Text;
 using ICSharpCode.NRefactory.TypeSystem;
-using SharpKit.Compiler.Java;
 using ICSharpCode.NRefactory.Extensions;
 using SharpKit.JavaScript.Ast;
 
