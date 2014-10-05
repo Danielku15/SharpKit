@@ -3,7 +3,7 @@ using System.Collections.Concurrent;
 
 namespace SharpKit.Compiler
 {
-    class Console
+    public class Console
     {
         public bool AutoFlush { get; set; }
         public ConcurrentQueue<string> Items = new ConcurrentQueue<string>();

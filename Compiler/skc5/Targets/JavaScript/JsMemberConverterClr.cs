@@ -10,9 +10,9 @@ using ICSharpCode.NRefactory.CSharp;
 
 namespace SharpKit.Compiler.CsToJs
 {
-    class MemberConverter_Clr : MemberConverter
+    class JsMemberConverterClr : JsMemberConverter
     {
-        public MemberConverter_Clr()
+        public JsMemberConverterClr()
         {
             VerifyJsTypesArrayStatement = Js.If(Js.Typeof(Js.Member("JsTypes")).Equal(Js.String("undefined"))).Then(Js.Var("JsTypes", Js.NewJsonArray()).Statement());
             VerifyJsTypesArrayStatement.AddAnnotation(new VerifyJsTypesArrayStatementAnnotation());

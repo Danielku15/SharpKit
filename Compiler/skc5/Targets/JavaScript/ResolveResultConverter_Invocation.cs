@@ -548,7 +548,7 @@ namespace SharpKit.Compiler.CsToJs
 
         public ResolveResultConverter Importer { get; set; }
         public SkProject Project { get; set; }
-        public CompilerTool Compiler { get; set; }
+        public ICompiler Compiler { get; set; }
 
         JsNode Visit(ResolveResult res)
         {

@@ -6,7 +6,7 @@ using ICSharpCode.NRefactory.Extensions;
 
 namespace SharpKit.Compiler.CsToJs
 {
-    class MemberConverter_Global : MemberConverter
+    class JsMemberConverterGlobal : JsMemberConverter
     {
 
         public override JsNode ExportConstructor(IMethod ctor)

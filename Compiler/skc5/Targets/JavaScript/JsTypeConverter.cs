@@ -6,27 +6,35 @@ using Mirrored.SharpKit.JavaScript;
 using System.IO;
 using SharpKit.JavaScript.Ast;
 using ICSharpCode.NRefactory.Extensions;
+using SharpKit.Targets;
+using SharpKit.Targets.Ast;
 using SharpKit.TypeScript;
 
 namespace SharpKit.Compiler.CsToJs
 {
-    class TypeConverter
+    class JsTypeConverter : ITypeConverter
     {
+        private List<TargetFile> _jsFiles;
+
         public bool ExportComments { get; set; }
-        public CompilerLogger Log { get; set; }
         public ICsExternalMetadata ExternalMetadata { get; set; }
         public SkProject Project { get { return Compiler.Project; } }
-        public List<JsFile> JsFiles { get; set; }
+
+        public IEnumerable<TargetFile> TargetFiles
+        {
+            get { return _jsFiles; }
+        }
+
         public string AssemblyName { get; set; }
         public bool LongFunctionNames { get; set; }
-        public Action<Dictionary<JsFile, List<ITypeDefinition>>> BeforeExportTypes;
-        public CompilerTool Compiler { get; set; }
-        public MemberConverter_Clr ClrConverter;
-        public event Action<MemberConverter> ConfigureMemberConverter;
+        public Action<Dictionary<TargetFile, List<ITypeDefinition>>> BeforeExportTypes { get; set; }
+        public ICompiler Compiler { get; set; }
+        public JsMemberConverterClr ClrConverter;
+        public event Action<IMemberConverter> ConfigureMemberConverter;
 
-        MemberConverter_Global GlobalConverter;
-        MemberConverter_Native NativeConverter;
-        MemberConverter_ExtJs ExtJsConverter;
+        JsMemberConverterGlobal GlobalConverter;
+        JsMemberConverterNative NativeConverter;
+        JsMemberConverterExtJs ExtJsConverter;
 
         bool ShouldExportType(ITypeDefinition ce)
         {
@@ -55,9 +63,9 @@ namespace SharpKit.Compiler.CsToJs
             {
                 if (!CanExportExternalType(ce))
                 {
-                    var att = ce.Attributes.FindByType<JsTypeAttribute>().Where(t => t.GetDeclaration() != null).FirstOrDefault();
+                    var att = ce.Attributes.FindByType<JsTypeAttribute>().FirstOrDefault(t => t.GetDeclaration() != null);
                     if (att != null) //do not give warnings on reference assembly attributes.
-                        Log.Warn(att.GetDeclaration(), "Only enums and interfaces can be exported externally, set Export=false on this JsTypeAttribute");
+                        Compiler.Log.Warn(att.GetDeclaration(), "Only enums and interfaces can be exported externally, set Export=false on this JsTypeAttribute");
                 }
                 else
                 {
@@ -88,7 +96,7 @@ namespace SharpKit.Compiler.CsToJs
             //sort types by OrderInFile if needed:
             //byFile.Where(k => k.Value.Where(t => GetOrderInFile(t) != 0).FirstOrDefault() != null).ForEach(t => t.Value.Sort((x, y) => GetOrderInFile(x) - GetOrderInFile(y)));
 
-            var byFile2 = new Dictionary<JsFile, List<ITypeDefinition>>();
+            var byFile2 = new Dictionary<TargetFile, List<ITypeDefinition>>();
             foreach (var pair in byFile)
             {
                 var file = new JsFile { Filename = pair.Key, Units = new List<JsUnit> { new JsUnit { Statements = new List<JsStatement>() } } };
@@ -99,7 +107,7 @@ namespace SharpKit.Compiler.CsToJs
             //export by filenames and order
             byFile2.ForEachParallel(ExportTypesInFile);
 
-            JsFiles = byFile2.Keys.ToList();
+            _jsFiles = byFile2.Keys.ToList();
 
             if (Sk.ExportTsHeaders(Compiler.Project.Compilation))
             {
@@ -142,7 +150,7 @@ namespace SharpKit.Compiler.CsToJs
             return allTypesToExport;
         }
 
-        void ExportTypesInFile(KeyValuePair<JsFile, List<ITypeDefinition>> p)
+        void ExportTypesInFile(KeyValuePair<TargetFile, List<ITypeDefinition>> p)
         {
             p.Value.ForEach(t => ConvertTypeDefinition(t, p.Key));
         }
@@ -178,48 +186,47 @@ namespace SharpKit.Compiler.CsToJs
             }
         }
 
-        void ConvertTypeDefinition(ITypeDefinition ce, JsFile jsFile)
+        void ConvertTypeDefinition(ITypeDefinition ce, TargetFile jsFile)
         {
             var unit = ConvertTypeDefinition(ce);
-            jsFile.Units[0].Statements.AddRange(unit.Statements);
-
+            ((JsFile)jsFile).Units[0].Statements.AddRange(unit.Statements);
         }
 
-        MemberConverter GetMemberConverter(ITypeDefinition ce)
+        JsMemberConverter GetMemberConverter(ITypeDefinition ce)
         {
-            MemberConverter export;
+            JsMemberConverter export;
             var isExtJs = Sk.IsExtJsType(ce);
             var isGlobal = Sk.IsGlobalType(ce) && !isExtJs;
             var isNative = Sk.IsNativeType(ce) && !isExtJs;
             if (isGlobal)
             {
                 if (GlobalConverter == null)
-                    GlobalConverter = new MemberConverter_Global();
+                    GlobalConverter = new JsMemberConverterGlobal();
                 export = GlobalConverter;
             }
             else if (isNative)
             {
                 if (NativeConverter == null)
-                    NativeConverter = new MemberConverter_Native();
+                    NativeConverter = new JsMemberConverterNative();
                 export = NativeConverter;
             }
             else if (isExtJs)
             {
                 if (ExtJsConverter == null)
-                    ExtJsConverter = new MemberConverter_ExtJs();
+                    ExtJsConverter = new JsMemberConverterExtJs();
                 export = ExtJsConverter;
             }
             else
             {
                 if (ClrConverter == null)
-                    ClrConverter = new MemberConverter_Clr();
+                    ClrConverter = new JsMemberConverterClr();
                 export = ClrConverter;
             }
             OnConfigureMemberConverter(export);
             return export;
         }
 
-        void OnConfigureMemberConverter(MemberConverter mc)
+        void OnConfigureMemberConverter(JsMemberConverter mc)
         {
             if (mc.AstNodeConverter != null)
                 return;
@@ -227,13 +234,13 @@ namespace SharpKit.Compiler.CsToJs
             mc.AssemblyName = AssemblyName;
             mc.AstNodeConverter = new AstNodeConverter
             {
-                Log = Log,
+                Log = Compiler.Log,
                 ExportComments = ExportComments,
                 Compiler = Compiler
             };
             mc.AstNodeConverter.Init();
             mc.LongFunctionNames = LongFunctionNames;
-            mc.Log = Log;
+            mc.Log = Compiler.Log;
             if (ConfigureMemberConverter != null)
                 ConfigureMemberConverter(mc);
         }
@@ -257,7 +264,7 @@ namespace SharpKit.Compiler.CsToJs
             if (unit2 != null && unit2.Statements.IsNotNullOrEmpty())
                 unit.Statements.AddRange(unit2.Statements);
             else
-                Log.Warn(ce, "No code was generated for type: " + ce.FullName);
+                Compiler.Log.Warn(ce, "No code was generated for type: " + ce.FullName);
 
             if (att != null && att.PostCode != null)
                 unit.Statements.Add(Js.CodeStatement(att.PostCode));

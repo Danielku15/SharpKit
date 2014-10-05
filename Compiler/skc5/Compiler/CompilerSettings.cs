@@ -4,9 +4,9 @@ using Corex.IO.Tools;
 
 namespace SharpKit.Compiler
 {
-    class CompilerToolArgs
+    public class CompilerSettings
     {
-        static ToolArgsInfo<CompilerToolArgs> Info = new ToolArgsInfo<CompilerToolArgs> { Error = System.Console.WriteLine };
+        static ToolArgsInfo<CompilerSettings> Info = new ToolArgsInfo<CompilerSettings> { Error = System.Console.WriteLine };
 
         private string _assemblyName;
 
@@ -108,7 +108,7 @@ namespace SharpKit.Compiler
 
         public bool LastArgs { get; set; }
 
-        public CompilerToolArgs()
+        public CompilerSettings()
         {
             Files = new List<string>();
             References = new List<string>();
@@ -117,7 +117,7 @@ namespace SharpKit.Compiler
             ResourceFiles = new List<string>();
         }
 
-        public static CompilerToolArgs Parse(string[] args)
+        public static CompilerSettings Parse(string[] args)
         {
             return Info.Parse(args);
         }

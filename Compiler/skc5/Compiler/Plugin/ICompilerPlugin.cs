@@ -5,6 +5,4 @@
         void Init(ICompiler compiler);
     }
 
-
-
 }

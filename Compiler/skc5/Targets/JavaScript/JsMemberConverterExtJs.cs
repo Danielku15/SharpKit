@@ -4,7 +4,7 @@ using SharpKit.JavaScript.Ast;
 
 namespace SharpKit.Compiler.CsToJs
 {
-    class MemberConverter_ExtJs : MemberConverter_Clr
+    class JsMemberConverterExtJs : JsMemberConverterClr
     {
         protected override JsUnit OnAfterExportType(ITypeDefinition ce, JsClrType jsType)
         {

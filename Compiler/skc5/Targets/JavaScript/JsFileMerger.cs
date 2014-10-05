@@ -15,7 +15,7 @@ namespace SharpKit.Compiler
         {
             ExternalFiles = new List<SkJsFile>();
         }
-        public CompilerTool Compiler { get; set; }
+        public ICompiler Compiler { get; set; }
         public SkProject Project { get; set; }
         /// <summary>
         /// This collection may be updated to include new files
@@ -41,9 +41,9 @@ namespace SharpKit.Compiler
         public SkJsFile GetJsFile(string filename, bool isExternal)
         {
             filename = filename.Replace("/", Sk.DirectorySeparator);
-            var file = Files.Where(t => FileEquals(t.TargetFile.Filename, filename)).FirstOrDefault();
+            var file = Files.FirstOrDefault(t => FileEquals(t.TargetFile.Filename, filename));
             if (file == null)
-                file = ExternalFiles.Where(t => FileEquals(t.TargetFile.Filename, filename)).FirstOrDefault();
+                file = ExternalFiles.FirstOrDefault(t => FileEquals(t.TargetFile.Filename, filename));
             if (file == null)
             {
                 file = new SkJsFile { TargetFile = new JsFile { Filename = filename, Units = new List<JsUnit>() }, Compiler = Compiler };
@@ -91,7 +91,7 @@ namespace SharpKit.Compiler
     }
 
     //FIX FOR ISSUE 306. Only the casing of the first path will be used, to make is compatible to windows.
-    class PathMerger
+    public class PathMerger
     {
 
         private static Dictionary<string, string> exportedPaths;

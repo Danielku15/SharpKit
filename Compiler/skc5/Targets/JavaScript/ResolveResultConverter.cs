@@ -10,6 +10,7 @@ using Mirrored.SharpKit.JavaScript;
 using SharpKit.JavaScript.Ast;
 using ICSharpCode.NRefactory.Extensions;
 using System.Linq.Expressions;
+using SharpKit.Targets.JavaScript;
 
 namespace SharpKit.Compiler.CsToJs
 {
@@ -17,7 +18,7 @@ namespace SharpKit.Compiler.CsToJs
     {
         public CompilerLogger Log { get; set; }
         public SkProject Project { get { return Compiler.Project; } }
-        public CompilerTool Compiler { get; set; }
+        public ICompiler Compiler { get; set; }
         public AstNodeConverter AstNodeConverter { get; set; }
         public event Action<ResolveResult> BeforeConvertCsToJsResolveResult;
         public event Action<ResolveResult, JsNode> AfterConvertCsToJsResolveResult;

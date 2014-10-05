@@ -4,6 +4,7 @@ using ICSharpCode.NRefactory.Semantics;
 using ICSharpCode.NRefactory.CSharp;
 using SharpKit.Compiler.Ast;
 using ICSharpCode.NRefactory.TypeSystem;
+using SharpKit.Targets;
 
 namespace SharpKit.Compiler
 {
@@ -58,9 +59,19 @@ namespace SharpKit.Compiler
 
         #region Properties
 
-        ICompilation CsCompilation { get; }
+        CompilerLogger Log { get; }
+        ICompilation Compilation { get; }
+
+        SkProject Project { get; }
         List<SkFile> SkFiles { get; }
+
         ICustomAttributeProvider CustomAttributeProvider { get; }
+        PathMerger PathMerger { get; }
+        Dictionary<string, object> TargetData { get; }
+        List<string> Defines { get; }
+        CompilerSettings Settings { get; }
+        string SkcVersion { get; }
+        ITypeConverter TypeConverter { get; }
 
         #endregion
 

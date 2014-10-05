@@ -5,7 +5,7 @@ using ICSharpCode.NRefactory.Extensions;
 
 namespace SharpKit.Compiler
 {
-    class SkProject : NProject
+    public class SkProject : NProject
     {
         public ConcurrentDictionary<IAttribute, object> AttributeCache = new ConcurrentDictionary<IAttribute, object>();
 

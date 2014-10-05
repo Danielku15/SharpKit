@@ -307,7 +307,7 @@ namespace SharpKit.Compiler
 
     class ManifestHelper
     {
-        public CompilerToolArgs Args { get; set; }
+        public CompilerSettings Args { get; set; }
         public CompilerLogger Log { get; set; }
         public string SkcVersion { get; set; }
         public string SkcFile { get; set; }

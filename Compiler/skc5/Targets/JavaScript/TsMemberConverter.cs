@@ -9,7 +9,7 @@ namespace SharpKit.Compiler.CsToJs
 {
     class TsMemberConverter
     {
-        public TypeConverter TypeConverter { get; set; }
+        public JsTypeConverter TypeConverter { get; set; }
 
         public List<TsType> Visit(List<ITypeDefinition> list)
         {

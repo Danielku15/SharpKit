@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using SharpKit.Compiler;
 using SharpKit.Targets.Ast;
+using SharpKit.Targets.JavaScript;
 
 namespace SharpKit.JavaScript.Ast
 {
@@ -14,7 +15,7 @@ namespace SharpKit.JavaScript.Ast
             SaveAs(filename, null, null);
         }
 
-        internal void SaveAs(string filename, string format, CompilerTool compiler)
+        internal void SaveAs(string filename, string format, ICompiler compiler)
         {
             var tmpFile = filename;
             using (var writer = JsWriter.Create(tmpFile, false))

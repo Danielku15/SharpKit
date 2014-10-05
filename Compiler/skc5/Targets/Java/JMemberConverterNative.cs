@@ -2,44 +2,48 @@
 using System.Collections.Generic;
 using System.Collections;
 using System.Linq;
-using Mirrored.SharpKit.JavaScript;
 using System.Diagnostics;
 using ICSharpCode.NRefactory.TypeSystem;
 using ICSharpCode.NRefactory.CSharp;
 using ICSharpCode.NRefactory.TypeSystem.Implementation;
 using ICSharpCode.NRefactory.Semantics;
 using ICSharpCode.NRefactory.CSharp.Resolver;
-using SharpKit.JavaScript.Ast;
 using ICSharpCode.NRefactory.Extensions;
+using Mirrored.SharpKit.Java;
+using SharpKit.Compiler.Ast;
+using SharpKit.Java;
+using SharpKit.Java.Ast;
+using SharpKit.Targets;
 
-namespace SharpKit.Compiler.CsToJs
+namespace SharpKit.Compiler.Java
 {
-    class MemberConverter
+    class JMemberConverterNative : IMemberConverter
     {
+        public ICompiler Compiler { get; set; }
+
+        #region Properties
 
         public bool LongFunctionNames { get; set; }
-        public AstNodeConverter AstNodeConverter { get; set; }
+        public JCodeImporter JCodeImporter { get; set; }
         public string AssemblyName { get; set; }
         public CompilerLogger Log { get; set; }
-        public CompilerTool Compiler { get; set; }
-        int VisitDepth;
-        const int MaxVisitDepth = 100;
+        #endregion
 
         #region _Visit
-        protected virtual JsNode _Visit(ITypeDefinition ce)
+        protected virtual List<JEntityDeclaration> _Visit(ITypeDefinition ce)
         {
             if (CompilerConfiguration.Current.EnableLogging)
             {
-                Log.Debug("JsTypeImporter: Visit Type: " + ce.ToString());
+                Log.Debug("JMemberConverterNative: Visit Type: " + ce.ToString());
             }
-            JsNode node;
+            List<JEntityDeclaration> node;
             if (ce.Kind == TypeKind.Class)
             {
                 node = _VisitClass(ce);
             }
             else if (ce.Kind == TypeKind.Interface)
             {
-                node = _VisitInterface(ce);
+                node = _VisitClass(ce);
             }
             else if (ce.Kind == TypeKind.Delegate)
             {
@@ -59,56 +63,227 @@ namespace SharpKit.Compiler.CsToJs
             }
             return node;
         }
-        protected virtual JsNode _VisitStruct(ITypeDefinition ce)
+        protected virtual List<JEntityDeclaration> _VisitStruct(ITypeDefinition ce)
         {
             throw new CompilerException(ce, "Member is not supported for export");
         }
 
-        public virtual JsNode _VisitInterface(ITypeDefinition ce)
+        public virtual List<JEntityDeclaration> _VisitDelegate(ITypeDefinition ce)
         {
-            throw new CompilerException(ce, "Member is not supported for export");
-        }
-        public virtual JsNode _VisitClass(ITypeDefinition ce)
-        {
-            throw new CompilerException(ce, "Member is not supported for export");
-        }
-        public virtual JsNode _VisitDelegate(ITypeDefinition ce)
-        {
-            throw new CompilerException(ce, "Member is not supported for export");
-        }
-        public virtual JsNode _VisitEnum(ITypeDefinition ce)
-        {
-            throw new CompilerException(ce, "Member is not supported for export");
+            return _VisitClass(ce);
         }
 
-        public virtual JsNode _Visit(IMethod me)
+        public virtual List<JEntityDeclaration> _Visit(IMethod me)
         {
             if (me.IsConstructor)
                 return ExportConstructor(me);
             return ExportMethod(me);
         }
-        public virtual JsNode _Visit(IField me)
+        public virtual List<JEntityDeclaration> _Visit(IField me)
         {
             return _VisitField(me);
         }
-        public virtual JsNode _VisitField(IField me)
-        {
-            throw new CompilerException(me, "Member is not supported for export");
-        }
-        public virtual JsNode _Visit(IEvent me)
+        public virtual List<JEntityDeclaration> _Visit(IEvent me)
         {
             if (me.DeclaringType.Kind == TypeKind.Interface)
                 return null;
-            var list2 = new JsNodeList { Nodes = new List<JsNode>() };
+            var list2 = new List<JEntityDeclaration>();
             if (me.AddAccessor != null)
-                list2.Nodes.Add(Visit(me.AddAccessor));
+                list2.Add(Visit(me.AddAccessor).Single());
             if (me.RemoveAccessor != null)
-                list2.Nodes.Add(Visit(me.RemoveAccessor));
+                list2.Add(Visit(me.RemoveAccessor).Single());
             return list2;
         }
-        public virtual JsNode _Visit(IProperty me)
+
+
+        public virtual List<JEntityDeclaration> _VisitClass(ITypeDefinition ce)
         {
-            throw new CompilerException(me, "Member is not supported for export");
+            var name = GetClassName(ce);
+            var ce2 = new JClassDeclaration
+            {
+                TypeDefinition = ce,
+                IsInterface = ce.IsInterface(),
+                TypeParameters = ce.TypeParameters.Select(t => t.JAccess()).ToList(),
+                Modifiers = { IsAbstract = ce.IsAbstract },
+                Name = name.ToJ(),
+            };
+            ImportModifiers(ce, ce2);
+
+            var extends = new List<IType>();
+            var implements = new List<IType>();
+            foreach (var baseCe in ce.DirectBaseTypes)
+            {
+                if (baseCe.IsKnownType(KnownTypeCode.Object) || baseCe.FullName == "java.lang.Object")
+                    continue;
+                if (baseCe.GetDefinition().IsInterface())
+                    implements.Add(baseCe);
+                else
+                    extends.Add(baseCe);
+            }
+            ce2.Extends = extends.Select(t => t.JAccess()).ToList();
+            ce2.Implements = implements.Select(t => t.JAccess()).ToList();
+
+            var members = GetMembersToExport(ce);
+            var x = VisitToUnit(members);
+            foreach (var xx in x)
+            {
+                ce2.Declarations.Add(xx);
+            }
+            return new List<JEntityDeclaration> { ce2 };
+        }
+
+        private static JMemberExpression GetClassName(ITypeDefinition ce)
+        {
+            var name = ce.JName2().RemoveGenericArgs();
+            name.PreviousMember = null;
+            return name;
+        }
+
+
+        public virtual List<JEntityDeclaration> _VisitEnum(ITypeDefinition ce)
+        {
+            var unit = new JUnit { Statements = new List<JStatement>() };
+            ExportTypeNamespace(ce);
+            var att = ce.GetMetadata<JEnumAttribute>();
+            bool valuesAsNames;
+            JMeta.UseJsonEnums(ce, out valuesAsNames);
+            //var valuesAsNames = att != null && att.ValuesAsNames;
+            var constants = ce.GetConstants().ToList();
+            if (!valuesAsNames && constants.Where(t => t.ConstantValue == null).FirstOrDefault() != null)
+            {
+                var value = 0L;
+                foreach (var c in constants)
+                {
+                    if (c.ConstantValue == null)
+                        c.SetConstantValue(value);
+                    else
+                        value = Convert.ToInt64(c.ConstantValue);
+                    value++;
+                }
+            }
+            constants.RemoveAll(t => !JMeta.IsJExported(t));
+            var json = new JJsonObjectExpression { NamesValues = new List<JJsonNameValue>() };
+            json.NamesValues.AddRange(constants.Select(t => Export(t, valuesAsNames)));
+            var st = J.JAccess(ce).Assign(json).Statement();
+
+            unit.Statements.Add(st);
+            throw new NotSupportedException();
+        }
+
+
+        public virtual List<JEntityDeclaration> _VisitField(IField fld)
+        {
+            var init2 = GetCreateFieldInitializer(fld);
+            JExpression initializer = null;
+            if (init2 != null)
+                initializer = JCodeImporter.VisitExpression(init2);
+            var fe2 = new JFieldDeclaration
+            {
+                FieldDefinition = fld,
+                Initializer = initializer,
+                Type = fld.Type.JAccess(),
+                Name = JNaming.JName(fld)
+            };
+            ImportModifiers(fld, fe2);
+            return new List<JEntityDeclaration> { fe2 };
+        }
+
+
+        public virtual List<JEntityDeclaration> ExportMethod(IMethod me)
+        {
+            var jma = JMeta.GetJMethodAttribute(me);
+            if (jma != null && (jma.Global || jma.GlobalCode))
+            {
+                throw new NotSupportedException();
+
+                //return CreateGlobalImporter().ExportMethod(me);
+            }
+            else
+            {
+                var ce = me.GetDeclaringTypeDefinition();
+                var member = J.JAccess(me);
+
+                var func = new JFunction();
+                //func.Name = me.Name;
+                func.Parameters = ExportMethodParameters(me);
+                func.Block = ExportMethodBody(me);
+                if (JCodeImporter.SupportClrYield)
+                    func = ApplyYield(func);
+                var typeParams = me.TypeParameters.Select(t => t.JAccess()).ToList();
+                var decl = new JMethodDeclaration
+                {
+                    Name = JNaming.JName(me),
+                    MethodDefinition = me,
+                    MethodBody = func.Block,
+                    Parameters = ExportParameters(me.Parameters),
+                    Type = me.ReturnType.JAccess(),
+                    TypeParameters = typeParams,
+                };
+                ImportModifiers(me, decl);
+
+                if (me.IsOverride || me.ImplementedInterfaceMembers.IsNotNullOrEmpty())
+                    decl.Annotations.Add(new JAnnotationDeclaration { Name = "Override" });
+                return new List<JEntityDeclaration> { decl };
+            }
+        }
+
+        private static void ImportModifiers(IEntity me, JEntityDeclaration decl)
+        {
+            decl.Modifiers.IsAbstract = me.IsAbstract && !me.IsStatic; //occurs on static classes
+            decl.Modifiers.IsPublic = me.IsPublic;
+            decl.Modifiers.IsProtected = me.IsProtected;
+            decl.Modifiers.IsPrivate = me.IsPrivate;
+            decl.Modifiers.IsStatic = me.IsStatic && !(me is IType);
+        }
+
+        List<JParameterDeclaration> ExportParameters(IList<IParameter> prms)
+        {
+            return prms.Select(t => new JParameterDeclaration { Name = t.Name, Type = t.Type.JAccess(), Parameter = t }).ToList();
+        }
+
+        public virtual List<JEntityDeclaration> _Visit(IProperty pe)
+        {
+            var list = GetAccessorsToExport(pe);
+            if (JMeta.IsNativeProperty(pe))
+            {
+                var statements = new List<JStatement>();
+
+                statements.AddRange(list.Select(ExportMethod).Cast<JStatement>());
+
+                var json = new JJsonObjectExpression();
+                foreach (var accessor in list)
+                {
+                    //if (accessor == pe.Getter) json.Add("get", (JsFunction)ExportMethod(accessor));
+                    //if (accessor == pe.Setter) json.Add("set", (JsFunction)ExportMethod(accessor));
+                    if (accessor == pe.Getter) json.Add("get", ExportTypePrefix(pe.Getter.GetDeclaringTypeDefinition(), pe.IsStatic).Member("get_" + pe.Name));
+                    if (accessor == pe.Setter) json.Add("set", ExportTypePrefix(pe.Setter.GetDeclaringTypeDefinition(), pe.IsStatic).Member("set_" + pe.Name));
+                }
+                if (JMeta.IsNativePropertyEnumerable(pe)) json.Add("enumerable", new JCodeExpression() { Code = "true" });
+                //json.Add("configurable", new JsCodeExpression() { Code = "true" });
+
+                var defineStatement = new JExpressionStatement()
+                {
+                    Expression = new JInvocationExpression()
+                    {
+                        Member = new JMemberExpression() { Name = "Object.defineProperty" },
+                        Arguments = new List<JExpression>(new JExpression[] 
+                        {
+                            ExportTypePrefix(pe.GetDeclaringTypeDefinition(), pe.IsStatic),
+                            new JStringExpression(){ Value = pe.Name },
+                            json 
+                        })
+                    }
+                };
+
+                statements.Add(defineStatement);
+                throw new NotSupportedException();
+                //return new JsUnit() { Statements = statements };
+            }
+            else
+            {
+                var list2 = list.Select(ExportMethod).ToList();
+                return list2.SelectMany(t => t).ToList();
+            }
         }
 
 
@@ -122,11 +297,11 @@ namespace SharpKit.Compiler.CsToJs
             //var list = new List<IField>();
             foreach (var pe in ce.GetProperties(t => t.IsStatic == isStatic, GetMemberOptions.IgnoreInheritedMembers))
             {
-                if (!Sk.IsJsExported(pe))
+                if (!JMeta.IsJExported(pe))
                     continue;
-                if (Sk.IsNativeField(pe))
+                if (JMeta.IsNativeField(pe))
                     yield return GenerateFakeField(pe);
-                else if (pe.IsAutomaticProperty())
+                else if (pe.IsAutomaticProperty(/*Compiler.Project*/))
                     yield return GenerateBackingField(pe);
             }
             //return list;
@@ -137,14 +312,14 @@ namespace SharpKit.Compiler.CsToJs
         {
             foreach (var pe in ce.GetFields(t => t.IsStatic == isStatic, GetMemberOptions.IgnoreInheritedMembers))
             {
-                if (!Sk.IsJsExported(pe))
+                if (!JMeta.IsJExported(pe))
                     continue;
                 yield return pe;
             }
 
             foreach (var pe in ce.GetEvents(t => t.IsStatic == isStatic, GetMemberOptions.IgnoreInheritedMembers))
             {
-                if (!Sk.IsJsExported(pe))
+                if (!JMeta.IsJExported(pe))
                     continue;
                 yield return pe;
             }
@@ -164,29 +339,31 @@ namespace SharpKit.Compiler.CsToJs
                 Region = pe.Region,
                 Type = pe.ReturnType,
                 IsStatic = pe.IsStatic,
+                IsPrivate = true,
+                ParentAssembly = pe.ParentAssembly,
             };
         }
-
         protected IField GenerateBackingField(IProperty pe)
         {
             var field = GenerateFakeField(pe);
-            field.Name = "_" + SkJs.GetEntityJsName(pe);
+            field.Name = JNaming.JName(pe).ToJavaNaming();
             return field;
         }
         #endregion
 
         #region ExportMember
 
-        public virtual JsNode ExportConstructor(IMethod ctor)
+        public virtual List<JEntityDeclaration> ExportConstructor(IMethod ctor)
         {
-            var ctorName = SkJs.GetEntityJsName(ctor);
-            var func = new JsFunction { Parameters = new List<string>() };
-
-            func.Block = ExportConstructorBody(ctor);
-            ExportConstructorParameters(ctor, func);
-            return func;
+            var ctorName = GetClassName(ctor.DeclaringTypeDefinition).ToJ();// SkJs.JName(ctor);
+            var func = new JFunction { Parameters = new List<string>() };
+            var me2 = new JMethodDeclaration { Name = ctorName, MethodDefinition = ctor, MethodBody = ExportConstructorBody(ctor) };
+            me2.Parameters = ExportParameters(ctor.Parameters);
+            ImportModifiers(ctor, me2);
+            //ExportConstructorParameters(ctor, func);
+            return new List<JEntityDeclaration> { me2 };
         }
-        protected JsBlock ExportConstructorBody(IMethod ctor)
+        protected JBlock ExportConstructorBody(IMethod ctor)
         {
             var ctorNode = (ConstructorDeclaration)ctor.GetDeclaration();
             BlockStatement ccc = null;
@@ -194,86 +371,40 @@ namespace SharpKit.Compiler.CsToJs
                 ccc = ctorNode.Body;
             //var ccc = ctor.GetDefinition();//.decl as CsConstructor;
             //var ccc = ctor.GetDefinition();
-            var block2 = (JsBlock)AstNodeConverter.Visit(ccc);
+            var block2 = (JBlock)JCodeImporter.Visit(ccc);
             if (block2 == null)
-                block2 = new JsBlock { Statements = new List<JsStatement>() };
+                block2 = new JBlock { Statements = new List<JStatement>() };
             var ce = ctor.GetDeclaringTypeDefinition();
-            var isClr = Sk.IsClrType(ce);
-            var isPrototype = Sk.IsNativeType(ce);
-            var statements = new List<JsStatement>();
-            //instance fields initializations
-            if (!Sk.InlineFields(ce))
-            {
-                var isGlobal = Sk.IsGlobalType(ce);
-                var fields = GetExportedDeclaredAndGeneratedFields(ce, ctor.IsStatic);
-                //var fields = ctor.GetDeclaringTypeDefinition().GetFields(null, GetMemberOptions.IgnoreInheritedMembers).Where(t => t.IsStatic() == ctor.IsStatic).ToList();
-                //fields = fields.Where(ShouldExportField).ToList();
-                //fields.AddRange(GeneratePropertyFields(ctor.DeclaringTypeDefinition, ctor.IsStatic));
-
-                //var props = ctor.GetDeclaringTypeDefinition().GetProperties(null, GetMemberOptions.IgnoreInheritedMembers).Where(t => t.IsStatic() == ctor.IsStatic).ToList();
-                //props = props.Where(t=>Sk.IsNativeField(t)).ToList();
-                //props = props.Where(t => Sk.IsExported(t)).ToList();
-                //var fieldsAndProperties = fields.Cast<IEntity>().Concat(props.Cast<IEntity>());
-                var initializers = fields.Select(fe => ExportInitializer(fe, null, isGlobal, false)).Cast<JsStatement>().ToList();
-                if (initializers.Contains(null))
-                    Log.Warn("Some field initializers were not exported");
-                statements.AddRange(initializers.Where(t => t != null));
-            }
+            var isClr = JMeta.IsClrType(ce);
+            var isPrototype = JMeta.IsNativeType(ce);
+            var statements = new List<JStatement>();
 
             if (!ctor.IsStatic)
             {
+                //TODO:
                 //base/this ctor invocation
                 var invocation = GetConstructorBaseOrThisInvocation2(ctor);
-                if (invocation != null)
+                if (invocation.Arguments.Count > 0)
                 {
-                    var baseThisCe = invocation.Member.DeclaringType;
-                    var isBaseClr = Sk.IsClrType(baseThisCe.GetDefinition());
-                    var isBasePrototype = Sk.IsNativeType(baseThisCe.GetDefinition()) && !Sk.IsJsonMode(baseThisCe.GetDefinition()) && !Sk.IsGlobalType(baseThisCe.GetDefinition());//happens when prototype inherits from json
-                    if (isBaseClr == isClr && isBasePrototype == isPrototype) //base and derived are both prototype, or both are clr
-                    {
-                        var newObjExp2 = AstNodeConverter.VisitExpression(invocation);
-                        JsInvocationExpression invocation2;
-                        if (newObjExp2 is JsNewObjectExpression)
-                        {
-                            var newObjExp = (JsNewObjectExpression)newObjExp2;
-                            invocation2 = newObjExp.Invocation;
-                        }
-                        else if (newObjExp2 is JsInvocationExpression)
-                        {
-                            invocation2 = (JsInvocationExpression)newObjExp2;
-                        }
-                        else
-                        {
-                            throw new Exception("Unexpected node: " + newObjExp2);
-                        }
-                        if (Sk.IsExtJsType(ce))
-                        {
-                            var invocation3 = Js.This().Member("callParent").Invoke();
-                            if (invocation2.Arguments.IsNotNullOrEmpty())
-                                invocation3.Arguments = new List<JsExpression> { Js.NewJsonArray(invocation2.Arguments.NotNull().ToArray()) };
-                            statements.Add(invocation3.Statement());
-                        }
-                        else
-                        {
-                            JsRefactorer.ToCallWithContext(invocation2, new JsThis());
-                            statements.Add(invocation2.Statement());
-                        }
-                    }
+                    var exp2 = (JNewObjectExpression)JCodeImporter.VisitExpression(invocation);
+                    var exp3 = exp2.Invocation;
+                    exp3.Member = J.Member("super");
+                    statements.Insert(0, exp3.Statement());
                 }
             }
             if (block2.Statements == null)
-                block2.Statements = new List<JsStatement>();
+                block2.Statements = new List<JStatement>();
             block2.Statements.InsertRange(0, statements);
 
             return block2;
         }
 
 
-        void ExportConstructorParameters(IMethod ctor, JsFunction func)
+        void ExportConstructorParameters(IMethod ctor, JFunction func)
         {
             var ce = ctor.GetDeclaringTypeDefinition();
             var list = new List<string>();
-            if (!Sk.IgnoreTypeArguments(ce))
+            if (!JMeta.IgnoreTypeArguments(ce))
             {
                 //danel
                 var gprms = ce.TypeParameters.ToList();//.GetGenericArguments().Where(ga => ga.isGenericParam()).ToList();
@@ -285,7 +416,7 @@ namespace SharpKit.Compiler.CsToJs
                         func.Parameters.Add(gprm.Name);
                         if (!ctor.IsStatic && func.Block != null)
                         {
-                            func.Block.Statements.Insert(i, Js.This().Member(gprm.Name).Assign(Js.Member(gprm.Name)).Statement());
+                            func.Block.Statements.Insert(i, J.This().Member(gprm.Name).Assign(J.Member(gprm.Name)).Statement());
                             i++;
                         }
                     }
@@ -297,46 +428,43 @@ namespace SharpKit.Compiler.CsToJs
                 func.Parameters.AddRange(prms.Select(t => t.Name));
             }
         }
-        public virtual JsNode ExportMethod(IMethod me)
+        protected JFunction ApplyYield(JFunction func)
         {
-            var jma = Sk.GetJsMethodAttribute(me);
-            if (jma != null && jma.GlobalCode)
+            if (JCodeImporter.SupportClrYield && func.Block.Descendants().OfType<JYieldStatement>().FirstOrDefault() != null)
             {
-                var block = ExportMethodBody(me);
-                return new JsUnit { Statements = block.Statements };
-            }
-            var func = new JsFunction();
-            func.Parameters = ExportMethodParameters(me);
-            func.Name = SkJs.GetEntityJsName(me);
-            func.Block = ExportMethodBody(me);
-            func = ApplyYield(func);
-            return func;
-        }
-        protected JsFunction ApplyYield(JsFunction func)
-        {
-            if (AstNodeConverter.SupportClrYield && func.Block.Descendants().OfType<JsYieldStatement>().FirstOrDefault() != null)
-            {
-                var yielder = new JsYieldRefactorer { BeforeFunction = func };
+                var yielder = new JYieldRefactorer { BeforeFunction = func };
                 yielder.Process();
                 return yielder.AfterFunction;
             }
             return func;
         }
-        protected JsBlock ExportMethodBody(IMethod me)
+        protected JBlock ExportMethodBody(IMethod me)
         {
+            if (me.DeclaringTypeDefinition.IsInterface())
+            {
+                return null;
+            }
             if (CompilerConfiguration.Current.EnableLogging)
             {
-                Log.Debug("JsTypeImporter: Visit Method: " + me.ToString());
+                Log.Debug("JMemberConverterNative: Visit Method: " + me.ToString());
             }
-            var nativeCode = Sk.GetNativeCode(me);
+            var nativeCode = JMeta.GetNativeCode(me);
             if (nativeCode != null)
             {
-                var block = Js.Block().Add(Js.CodeStatement(nativeCode)); //TODO: double semicolon?
+                var block = J.Block().Add(J.Code(nativeCode).Statement()); //TODO: double semicolon?
+                var x = block.ToJ();
                 return block;
             }
             var def = me.GetDefinition();
             if (def == null || def.IsNull)
             {
+                if (me.DeclaringTypeDefinition.IsDelegate())
+                {
+                    var block = J.Block();
+                    if (!me.ReturnType.IsVoid())
+                        block.Add(J.Return(J.Null()));
+                    return block;
+                }
                 if (me.IsAutomaticEventAccessor())
                 {
                     if (me.IsEventAddAccessor())
@@ -352,27 +480,30 @@ namespace SharpKit.Compiler.CsToJs
                 }
                 else if (me.IsAutomaticPropertyAccessor())
                 {
-                    var bf = Js.Member("_" + SkJs.GetEntityJsName(me.AccessorOwner));
+                    var bf = J.Member(JNaming.JName(me.AccessorOwner).ToJavaNaming());
                     if (!me.IsStatic)
-                        bf.PreviousMember = Js.This();
-                    else if (!Sk.IsGlobalMethod(me))
-                        bf.PreviousMember = SkJs.EntityToMember(me.DeclaringTypeDefinition);
+                        bf.PreviousMember = J.This();
+                    else if (!JMeta.IsGlobalMethod(me))
+                        bf.PreviousMember = JNaming.JAccess(me.DeclaringType);
                     if (me.IsGetter())
-                        return Js.Block().Add(Js.Return(bf));
+                        return J.Block().Add(J.Return(bf));
                     else
-                        return Js.Block().Add(bf.Assign(Js.Member("value")).Statement());
+                        return J.Block().Add(bf.Assign(J.Member("value")).Statement());
                 }
                 return null;
             }
-            var block2 = (JsBlock)AstNodeConverter.Visit(def);
+            var block2 = (JBlock)JCodeImporter.Visit(def);
             if (def.Descendants.OfType<YieldReturnStatement>().FirstOrDefault() != null)
             {
-                if (!AstNodeConverter.SupportClrYield)
+                if (!JCodeImporter.SupportClrYield)
                 {
                     if (block2.Statements == null)
-                        block2.Statements = new List<JsStatement>();
-                    block2.Statements.Insert(0, Js.Var("$yield", Js.NewJsonArray()).Statement());
-                    block2.Statements.Add(AstNodeConverter.GenerateYieldReturnStatement(me));
+                        block2.Statements = new List<JStatement>();
+                    var arg = me.ReturnType.TypeArguments[0].JAccess();
+                    var listType = J.Members("java.util.ArrayList").AddGenericArg(arg);
+                    var yieldVar = J.Var("$yield", listType, J.New(listType)).Statement();
+                    block2.Statements.Insert(0, yieldVar);
+                    block2.Statements.Add(JCodeImporter.GenerateYieldReturnStatement(me));
                 }
             }
             return block2;
@@ -380,7 +511,7 @@ namespace SharpKit.Compiler.CsToJs
         protected List<string> ExportMethodParameters(IMethod me)
         {
             var list = new List<string>();
-            if (!Sk.IgnoreGenericMethodArguments(me) && me.GetGenericArguments().Count() > 0)
+            if (!JMeta.IgnoreGenericMethodArguments(me) && me.GetGenericArguments().Count() > 0)
             {
                 list.AddRange(me.GetGenericArguments().Select(t => t.Name));
             }
@@ -422,10 +553,10 @@ namespace SharpKit.Compiler.CsToJs
                 return !pe.IsExplicitInterfaceImplementation;
             if (pe.IsExplicitInterfaceImplementation)
                 return false;
-            var att = pe.GetMetadata<JsPropertyAttribute>();
+            var att = pe.GetMetadata<JPropertyAttribute>();
             if (att != null && !att.Export)
                 return false;
-            if (Sk.IsNativeField(pe))
+            if (JMeta.IsNativeField(pe))
                 return false;
             //{
 
@@ -438,19 +569,19 @@ namespace SharpKit.Compiler.CsToJs
 
         protected bool ShouldExportEvent(IEvent ev)
         {
-            return !ev.IsExplicitInterfaceImplementation && Sk.IsJsExported(ev);
+            return !ev.IsExplicitInterfaceImplementation;
         }
 
         protected bool ShouldExportField(IField fe)
         {
-            var att = fe.GetMetadata<JsFieldAttribute>();
+            var att = fe.GetMetadata<JFieldAttribute>();
             if (att != null && att._Export != null)
                 return att.Export;
             return true;
         }
         protected bool ShouldExportConstant(IField fe)
         {
-            var att = fe.GetMetadata<JsFieldAttribute>();
+            var att = fe.GetMetadata<JFieldAttribute>();
             if (att != null && att._Export != null)
                 return att.Export;
             return true;
@@ -459,37 +590,34 @@ namespace SharpKit.Compiler.CsToJs
         protected bool ShouldExportMethod(IMethod mde)
         {
             var ret = !mde.IsExplicitInterfaceImplementation;
-            if (Sk.NewInterfaceImplementation) ret = true;
-
-            if (!Sk.NewInterfaceImplementation)
-            {
-                var body = mde.GetDeclarationBody();
-                if (body == null || body.IsNull)
-                    ret = false;
-            }
+            var body = mde.GetDeclarationBody();
+            //if (body == null || body.IsNull)
+            //    ret = false;
             if (mde.IsAutomaticAccessor())
                 ret = false;
             if (mde.GetOwner() != null)
                 return false;
-            var att = mde.GetMetadata<JsMethodAttribute>();
+            var att = mde.GetMetadata<JMethodAttribute>();
             if (att != null && !att.Export)
                 return false;
+            if (mde.DeclaringTypeDefinition.IsDelegate() && mde.Name == "Invoke")
+                return true;
             return ret;
         }
 
         protected bool ShouldExportConstructor(IMethod ctor)
         {
-            var att = ctor.GetMetadata<JsMethodAttribute>();
+            var att = ctor.GetMetadata<JMethodAttribute>();
             if (att != null && !att.Export)
                 return false;
-            if (ctor.IsGenerated(Compiler.Project) && Sk.OmitDefaultConstructor(ctor.GetDeclaringTypeDefinition()))
+            if (ctor.IsGenerated(Compiler.Project))// && Sk.OmitDefaultConstructor(ctor.GetDeclaringTypeDefinition())
                 return false;
             return true;
         }
 
         bool ShouldExportMethodBody(IMethod me)
         {
-            return (Sk.IsJsExported(me) && me.GetMethodDeclaration() != null && !me.IsAnonymousMethod());
+            return (JMeta.IsJExported(me) && me.GetMethodDeclaration() != null && !me.IsAnonymousMethod());
         }
 
 
@@ -501,10 +629,8 @@ namespace SharpKit.Compiler.CsToJs
 
         public ResolveResult GetCreateInitializer(IMember member)
         {
-            if (member is IField)
-                return GetCreateFieldInitializer((IField)member);
-            if (member is IEvent)
-                return GetCreateEventInitializer((IEvent)member);
+            if (member is IField) return GetCreateFieldInitializer((IField)member);
+            if (member is IEvent) return GetCreateEventInitializer((IEvent)member);
             throw new NotImplementedException("Member type not supported");
 
             //if (fieldOrProperty.EntityType == EntityType.Field)
@@ -526,26 +652,26 @@ namespace SharpKit.Compiler.CsToJs
             throw new NotSupportedException();
         }
 
-        public JsNode ExportInitializer(IMember fieldOrProperty, BlockStatement ccBlock, bool isGlobal, bool isNative = false)
+        public JNode ExportInitializer(IMember fieldOrProperty, BlockStatement ccBlock, bool isGlobal, bool isNative = false)
         {
             var initializer = GetCreateInitializer(fieldOrProperty);
             var init2 = AccessSelfFieldOrProperty(fieldOrProperty).Assign(initializer);
 
-            var jsInit = AstNodeConverter.VisitExpression(init2);
+            var jInit = JCodeImporter.VisitExpression(init2);
             if (isGlobal)
             {
                 //danel HACK
-                var st = new JsPreUnaryExpression { Operator = "var ", Right = jsInit }.Statement();
+                var st = new JPreUnaryExpression { Operator = "var ", Right = jInit }.Statement();
                 return st;
             }
             else if (isNative)
             {
-                var st = jsInit.Statement();
+                var st = jInit.Statement();
                 return st;
             }
             else //clr
             {
-                var st = jsInit.Statement();
+                var st = jInit.Statement();
                 return st;
             }
         }
@@ -553,40 +679,32 @@ namespace SharpKit.Compiler.CsToJs
         public ResolveResult GetDefaultValueExpression(IType typeRef)
         {
             if (typeRef.Kind == TypeKind.Struct || typeRef.Kind == TypeKind.Enum)
-                return GetValueTypeInitializer(typeRef, Compiler.Project);
+                return GetValueTypeInitializer(typeRef, Compiler);
             return Cs.Null();
         }
 
         public ResolveResult GetCreateFieldInitializer(IField fe)
         {
             Expression initializer = null;
-            //var decl = (FieldDeclaration)fe.GetDeclaration();
-            //if (decl != null)
-            //{
-            //    if (decl.Variables.Count > 1)
-            //        throw new CompilerException(fe, "Multiple field declarations is not supported: " + fe.FullName);
-            //    var variable = decl.Variables.FirstOrDefault();
+            var decl = (FieldDeclaration)fe.GetDeclaration();
+            if (decl != null)
+            {
+                if (decl.Variables.Count > 1)
+                    throw new CompilerException(fe, "Multiple field declarations is not supported: " + fe.FullName);
+                var variable = decl.Variables.FirstOrDefault();
 
-            //    initializer = variable.Initializer;
-            //}
-            //var df = fe as DefaultResolvedField;
-            //if (df != null)
-            //{
-            //    var duf = (DefaultUnresolvedField)df.UnresolvedMember;
-            //    initializer = ((VariableInitializer)duf.Initializer).Initializer;
-            //}
-
-            initializer = fe.GetInitializer();
-
+                initializer = variable.Initializer;
+            }
             if (initializer == null || initializer.IsNull)
             {
-                var res = GetDefaultValueExpression(fe.Type);
-                if (res == null)
-                {
-                    Log.Warn(fe, "Can't initialize field, initializing to null: " + fe.FullName);
-                    return Cs.Null();
-                }
-                return res;
+                return null;
+                //var res = GetDefaultValueExpression(fe.Type);
+                //if (res == null)
+                //{
+                //    Log.Warn(fe, "Can't initialize field, initializing to null: " + fe.FullName);
+                //    return Cs.Null();
+                //}
+                //return res;
             }
             else
             {
@@ -600,9 +718,10 @@ namespace SharpKit.Compiler.CsToJs
             return Cs.Null();
         }
 
-        public static ResolveResult GetValueTypeInitializer(IType ce, NProject Project)
+        NProject Project { get { return Compiler.Project; } }
+        public static ResolveResult GetValueTypeInitializer(IType ce, ICompiler compiler)
         {
-            var fullName = SkJs.GetEntityJsName(ce);
+            var Project = compiler.Project;
             if (ce.FullName == "System.Nullable")
                 return Cs.Null();
             if (ce is ITypeDefinition)
@@ -660,17 +779,17 @@ namespace SharpKit.Compiler.CsToJs
 
         #region Utils
 
-        protected JsExpression Serialize(object obj)
+        protected JExpression Serialize(object obj)
         {
             if (obj == null)
-                return Js.Null();
-            if (obj is JsExpression)
+                return J.Null();
+            if (obj is JExpression)
             {
-                return (JsExpression)obj;
+                return (JExpression)obj;
             }
             else if (obj is Dictionary<string, object>)
             {
-                var obj2 = Js.Json();
+                var obj2 = J.Json();
                 var dic = (Dictionary<string, object>)obj;
                 dic.ForEach(pair => obj2.Add(pair.Key, Serialize(pair.Value)));
                 return obj2;
@@ -678,20 +797,20 @@ namespace SharpKit.Compiler.CsToJs
             else if (obj is IList)
             {
                 var list = (IList)obj;
-                var array = Js.NewJsonArray(list.Cast<object>().Select(Serialize).ToArray());
+                var array = J.NewJsonArray(list.Cast<object>().Select(Serialize).ToArray());
                 return array;
             }
             else if (obj is Enum)
             {
-                return Js.String(obj.ToString());
+                return J.String(obj.ToString());
             }
             else if (obj is string || obj is bool || obj is int)
             {
-                return Js.Value(obj);
+                return J.Value(obj);
             }
             else
             {
-                var json = Js.Json();
+                var json = J.Json();
                 obj.GetType().GetProperties().ForEach(pe =>
                 {
                     var value = pe.GetValue(obj, null);
@@ -702,44 +821,11 @@ namespace SharpKit.Compiler.CsToJs
             }
         }
 
-        public List<IMember> GetMembersToExport(ITypeDefinition ce)
+        protected List<IMember> GetMembersToExport(ITypeDefinition ce)
         {
             var members = ce.Members.Where(t => ShouldExportMember(t)).ToList();
-            var fields = GeneratePropertyFields(ce, true).Concat(GeneratePropertyFields(ce, false));
+            var fields = GeneratePropertyFields(ce, true).Concat(GeneratePropertyFields(ce, false)).ToList();
             members = members.Concat(fields).ToList();
-
-            var ctor = ce.Members.Where(t => t.SymbolKind == SymbolKind.Constructor && !t.IsStatic).FirstOrDefault();
-            if (ctor == null && !Sk.OmitDefaultConstructor(ce))
-            {
-                ctor = GenerateDefaultConstructor(ce);
-                if (ctor != null)
-                    members.Add(ctor);
-            }
-            if (ctor != null && members.Contains(ctor))
-            {
-                var ctorIndex = 0;
-                if (members.IndexOf(ctor) != ctorIndex)
-                {
-                    members.Remove(ctor);
-                    members.Insert(ctorIndex, ctor);
-                }
-            }
-            var inlineFields = Sk.InlineFields(ce);
-            if (!inlineFields)
-            {
-                var vars = members.Where(t => t.SymbolKind == SymbolKind.Field).Cast<IField>();
-                if (vars.Where(t => t.IsStatic()).FirstOrDefault() != null)
-                {
-                    var cctor = ce.GetConstructors(false, true).FirstOrDefault();
-                    if (cctor == null)
-                    {
-                        cctor = CreateStaticCtor(ce);
-                        members.Insert(1, cctor);
-                    }
-                }
-                members.RemoveAll(t => t.SymbolKind == SymbolKind.Field);
-            }
-
             return members;
         }
 
@@ -753,6 +839,7 @@ namespace SharpKit.Compiler.CsToJs
                 Region = ce.Region,
                 BodyRegion = ce.BodyRegion,
                 DeclaringType = ce,
+                ParentAssembly = ce.ParentAssembly,
             };
             //var cctor = (IMethod)new DefaultUnresolvedMethod
             //{
@@ -773,7 +860,7 @@ namespace SharpKit.Compiler.CsToJs
             var baseClass = ce.GetBaseType();
             while (baseClass != null)
             {
-                if (Sk.IsClrType(baseClass.GetDefinition()) || (Sk.IsNativeType(baseClass.GetDefinition()) && !Sk.IsGlobalType(baseClass.GetDefinition())) || !recursive)
+                if (JMeta.IsClrType(baseClass.GetDefinition()) || (JMeta.IsNativeType(baseClass.GetDefinition()) && !JMeta.IsGlobalType(baseClass.GetDefinition())) || !recursive)
                     return baseClass;
                 baseClass = baseClass.GetBaseType();
             }
@@ -834,7 +921,7 @@ namespace SharpKit.Compiler.CsToJs
             else
             {
                 var ce = ctor.GetDeclaringTypeDefinition();
-                if (Sk.OmitInheritance(ce))
+                if (JMeta.OmitInheritance(ce))
                     return null;
                 var baseType = GetBaseClassIfValid(ce, true);
                 if (baseType != null)
@@ -854,21 +941,19 @@ namespace SharpKit.Compiler.CsToJs
         protected List<IMethod> GetAccessorsToExport(IProperty pe)
         {
             var list = new List<IMethod>();
-            if (pe.IsAutomaticProperty() && !Sk.IsNativeField(pe))
+            if (pe.IsAutomaticProperty(/*Compiler.Project*/) && !JMeta.IsNativeField(pe))
             {
                 list.Add(pe.Getter);
                 list.Add(pe.Setter);
             }
             else
             {
-                var exportGetter = (pe.Getter != null && !pe.Getter.GetDeclarationBody().IsNull);
-                var exportSetter = (pe.Setter != null && !pe.Setter.GetDeclarationBody().IsNull);
-                if (exportGetter)
+                if (pe.Getter != null)
                     list.Add(pe.Getter);
-                if (exportSetter)
+                if (pe.Setter != null)
                     list.Add(pe.Setter);
             }
-            list.RemoveAll(t => !Sk.IsJsExported(t));
+            list.RemoveAll(t => !JMeta.IsJExported(t));
             return list;
         }
         protected IMethod GenerateDefaultConstructor(ITypeDefinition ce)
@@ -886,32 +971,25 @@ namespace SharpKit.Compiler.CsToJs
             }
             return compilerGeneratedCtor;
         }
-        protected string GetJsTypeName(ITypeDefinition ce)
-        {
-            return GetJsTypeName(ce.GetEntityTypeRef());
-        }
-
-        protected string GetJsTypeName(IType etr)
-        {
-            return SkJs.GetEntityJsName(etr);//.FixClassName(etr, true);
-        }
 
         #endregion
 
         #region Visit
-        JsMode GetJsMode(ITypeDefinition ce)
+        JMode GetJsMode(ITypeDefinition ce)
         {
-            var isGlobal = Sk.IsGlobalType(ce);
+            var isGlobal = JMeta.IsGlobalType(ce);
             if (isGlobal)
-                return JsMode.Global;
-            var isNative = Sk.IsNativeType(ce);
+                return JMode.Global;
+            var isNative = JMeta.IsNativeType(ce);
             if (isNative)
-                return JsMode.Prototype;
-            return JsMode.Clr;
+                return JMode.Prototype;
+            return JMode.Clr;
         }
 
+        int VisitDepth;
+        const int MaxVisitDepth = 100;
         [DebuggerStepThrough]
-        public JsNode Visit(IEntity node)
+        public List<JEntityDeclaration> Visit(IEntity node)
         {
             if (node == null)
                 return null;
@@ -938,145 +1016,139 @@ namespace SharpKit.Compiler.CsToJs
         }
 
         public event Action<IEntity> BeforeVisitEntity;
-        public event Action<IEntity, JsNode> AfterVisitEntity;
-        public JsNode UnsafeVisit(IEntity me)
+        public event Action<IEntity, ITargetNode> AfterVisitEntity;
+        public event Action<AstNode> BeforeConvertCsToTargetAstNode
+        {
+            add { JCodeImporter.BeforeConvertCsToTargetAstNode += value; }
+            remove { JCodeImporter.BeforeConvertCsToTargetAstNode -= value; }
+        }
+
+        public event Action<AstNode, ITargetNode> AfterConvertCsToTargetAstNode
+        {
+            add { JCodeImporter.AfterConvertCsToTargetAstNode += value; }
+            remove { JCodeImporter.AfterConvertCsToTargetAstNode -= value; }
+        }
+
+        public event Action<ResolveResult> BeforeConvertCsToTargetResolveResult
+        {
+            add { JCodeImporter.BeforeConvertCsToJResolveResult += value; }
+            remove { JCodeImporter.BeforeConvertCsToJResolveResult -= value; }
+        }
+
+        public event Action<ResolveResult, ITargetNode> AfterConvertCsToTargetResolveResult
+        {
+            add { JCodeImporter.AfterConvertCsToJResolveResult += value; }
+            remove { JCodeImporter.AfterConvertCsToJResolveResult -= value; }
+        }
+
+        //public event Action<IEntity, JNode> AfterVisitEntity;
+        public List<JEntityDeclaration> UnsafeVisit(IEntity me)
         {
             if (CompilerConfiguration.Current.EnableLogging)
             {
-                Log.Debug("JsTypeImporter: Visit Entity: " + me.ToString());
+                Log.Debug("JMemberConverterNative: Visit Entity: " + me.ToString());
             }
             if (BeforeVisitEntity != null)
                 BeforeVisitEntity(me);
-            JsNode node2 = null;
+            List<JEntityDeclaration> node2 = null;
             switch (me.SymbolKind)
             {
                 #region switch case
-                //case EntityType.ent_anonymous_method:
-                //    node2 = _Visit((CsEntityAnonymousMethod)me); break;
-                //case EntityType.ent_block:
-                //    node2 = _Visit((CsEntityBlock)me); break;
-                //case EntityType.ent_block_variable:
-                //    node2 = _Visit((CsEntityBlockVariable)me); break;
                 case SymbolKind.TypeDefinition:
                     node2 = _Visit((ITypeDefinition)me); break;
-                //case EntityType.ent_constant:
-                //    node2 = _Visit((IConst)me); break;
-                //case EntityType.ent_delegate:
-                //    node2 = _Visit((IDelegate)me); break;
-                //case EntityType.ent_enum:
-                //    node2 = _Visit((CsEntityEnum)me); break;
                 case SymbolKind.Event:
                     node2 = _Visit((IEvent)me); break;
-                //case EntityType.ent_formal_parameter:
-                //    node2 = _Visit((CsEntityFormalParameter)me); break;
-                //case EntityType.ent_generic_param:
-                //    node2 = _Visit((CsEntityGenericParam)me); break;
-                //case EntityType.Interface:
-                //    node2 = _Visit((IInterface)me); break;
-                //case EntityType.ent_local_constant:
-                //    node2 = _Visit((CsEntityLocalConstant)me); break;
-                //case EntityType.ent_local_variable:
-                //    node2 = _Visit((CsEntityLocalVariable)me); break;
                 case SymbolKind.Method:
                 case SymbolKind.Constructor:
                 case SymbolKind.Operator:
                 case SymbolKind.Accessor:
                     node2 = _Visit((IMethod)me); break;
-                //case EntityType.ent_namespace:
-                //    node2 = _Visit((CsEntityNamespace)me); break;
                 case SymbolKind.Property:
                 case SymbolKind.Indexer:
                     node2 = _Visit((IProperty)me); break;
-                //case EntityType.ent_struct:
-                //    node2 = _Visit((IStruct)me); break;
                 case SymbolKind.Field:
                     node2 = _Visit((IField)me); break;
                 #endregion
             }
-            if (AfterVisitEntity != null)
-                AfterVisitEntity(me, node2);
+
+            if (AfterVisitEntity != null && node2 != null)
+            {
+                foreach (var entity in node2)
+                {
+                    AfterVisitEntity(me, entity);
+                }
+            }
             return node2;
         }
 
-        protected JsUnit VisitToUnit(List<IMember> list)
+        protected List<JEntityDeclaration> VisitToUnit(List<IMember> list)
         {
-            var unit = new JsUnit { Statements = new List<JsStatement>() };
+            var unit = new List<JEntityDeclaration>();
             VisitToUnit(unit, list);
             return unit;
         }
-        protected void VisitToUnit(JsUnit unit, List<IMember> list)
+        protected void VisitToUnit(List<JEntityDeclaration> unit, List<IMember> list)
         {
             var nodes = list.Select(Visit).ToList();
             ImportToUnit(unit, nodes);
         }
-        protected void ImportToUnit(JsUnit unit, List<JsNode> list)
+
+        protected void ImportToUnit(List<JEntityDeclaration> unit, List<List<JEntityDeclaration>> list)
         {
             foreach (var node in list)
             {
                 if (node == null)
                     continue;
-                JsStatement st = null;
-                if (node is JsFunction)
-                    st = ((JsFunction)node).Statement();
-                else if (node is JsNodeList)
-                    ImportToUnit(unit, ((JsNodeList)node).Nodes);
-                else if (node is JsUnit)
-                    unit.Statements.AddRange(((JsUnit)node).Statements);
-                else
-                    st = (JsStatement)node;
-                if (st != null)
-                    unit.Statements.Add(st);
+                unit.AddRange(node);
             }
         }
 
         #endregion
 
-        protected JsJsonObjectExpression VisitEnumToJson(ITypeDefinition ce)
-        {
-            bool valuesAsNames;
-            Sk.UseJsonEnums(ce, out valuesAsNames);
-            //var valuesAsNames = att != null && att.ValuesAsNames;
-            var constants = ce.GetConstants().ToList();
-            if (!valuesAsNames && constants.Where(t => t.ConstantValue == null).FirstOrDefault() != null)
-            {
-                var value = 0L;
-                foreach (var c in constants)
-                {
-                    if (c.ConstantValue == null)
-                        c.SetConstantValue(value);
-                    else
-                        value = Convert.ToInt64(c.ConstantValue);
-                    value++;
-                }
-            }
-            constants.RemoveAll(t => !Sk.IsJsExported(t));
-            var json = new JsJsonObjectExpression { NamesValues = new List<JsJsonNameValue>() };
-            json.NamesValues.AddRange(constants.Select(t => VisitEnumField(t, valuesAsNames)));
-            return json;
-        }
-
-        JsJsonNameValue VisitEnumField(IField pe, bool valuesAsNames)
-        {
-            if (valuesAsNames)
-            {
-                return Js.JsonNameValue(pe.Name, Js.String(pe.Name));
-            }
-            else
-            {
-                return Js.JsonNameValue(pe.Name, Js.Value(pe.ConstantValue));
-            }
-        }
-
-        protected virtual JsFunction GenerateAutomaticEventAccessor(IEvent ee, bool isRemove)
+        protected virtual JFunction GenerateAutomaticEventAccessor(IEvent ee, bool isRemove)
         {
             if (isRemove)
             {
-                var remover = Js.Function("value").Add(Js.This().Member(ee.Name).Assign(Js.Member("$RemoveDelegate").Invoke(Js.This().Member(ee.Name), Js.Member("value"))).Statement());
+                var remover = J.Function("value").Add(J.This().Member(ee.Name).Assign(J.Member("$RemoveDelegate").Invoke(J.This().Member(ee.Name), J.Member("value"))).Statement());
                 return remover;
             }
-            var adder = Js.Function("value").Add(Js.This().Member(ee.Name).Assign(Js.Member("$CombineDelegates").Invoke(Js.This().Member(ee.Name), Js.Member("value"))).Statement());
+            var adder = J.Function("value").Add(J.This().Member(ee.Name).Assign(J.Member("$CombineDelegates").Invoke(J.This().Member(ee.Name), J.Member("value"))).Statement());
             return adder;
         }
+
+
+        #region Native
+
+
+
+
+        #region Utils
+        JJsonNameValue Export(IField pe, bool valuesAsNames)
+        {
+            if (valuesAsNames)
+            {
+                return J.JsonNameValue(pe.Name, J.String(pe.Name));
+            }
+            else
+            {
+                return J.JsonNameValue(pe.Name, J.Value(pe.ConstantValue));
+            }
+        }
+        JCompilationUnit ExportTypeNamespace(ITypeDefinition ce)
+        {
+            return new JCompilationUnit { PackageName = ce.GetPackageName() };
+        }
+        JMemberExpression ExportTypePrefix(ITypeDefinition ce, bool isStatic)
+        {
+            var me = ce.JAccess();
+            //if (!isStatic)
+            //    me = me.MemberOrSelf(Sk.GetPrototypeName(ce));
+            return me;
+        }
+
+        #endregion
+
+        #endregion
 
     }
 

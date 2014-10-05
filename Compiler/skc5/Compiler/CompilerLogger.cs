@@ -9,7 +9,7 @@ using ICSharpCode.NRefactory.Extensions;
 
 namespace SharpKit.Compiler
 {
-    class CompilerLogger
+    public class CompilerLogger
     {
         private string _loggingFilename;
 
@@ -171,7 +171,7 @@ namespace SharpKit.Compiler
         }
     }
 
-    class CompilerLogItem
+    public class CompilerLogItem
     {
         public AstNode Node { get; set; }
         public string Text { get; set; }
@@ -184,7 +184,7 @@ namespace SharpKit.Compiler
         public string AbsoluteFilename { get; set; }
     }
 
-    enum CompilerLogItemType
+    public enum CompilerLogItemType
     {
         Message,
         Warning,

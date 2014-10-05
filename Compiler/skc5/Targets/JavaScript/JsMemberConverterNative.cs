@@ -8,7 +8,7 @@ using ICSharpCode.NRefactory.Extensions;
 
 namespace SharpKit.Compiler.CsToJs
 {
-    class MemberConverter_Native : MemberConverter
+    class JsMemberConverterNative : JsMemberConverter
     {
 
         public override JsNode _VisitClass(ITypeDefinition ce)
@@ -51,9 +51,9 @@ namespace SharpKit.Compiler.CsToJs
             return null;
         }
 
-        MemberConverter_Global CreateGlobalMemberConverter()
+        JsMemberConverterGlobal CreateGlobalMemberConverter()
         {
-            return new MemberConverter_Global
+            return new JsMemberConverterGlobal
             {
                 Compiler = Compiler,
                 AssemblyName = AssemblyName,

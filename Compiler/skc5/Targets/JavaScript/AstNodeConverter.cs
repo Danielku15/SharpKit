@@ -25,7 +25,7 @@ namespace SharpKit.Compiler.CsToJs
         }
 
         public ResolveResultConverter ResolveResultConverter { get; set; }
-        public CompilerTool Compiler { get; set; }
+        public ICompiler Compiler { get; set; }
         public CompilerLogger Log { get; set; }
         public bool ExportComments { get; set; }
         public SkProject Project { get { return Compiler.Project; } }

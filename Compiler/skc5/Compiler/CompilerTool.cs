@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Threading;
 using System.Globalization;
+using Mono.CSharp;
 using SharpKit.Compiler.Ast;
 using SharpKit.Compiler.JavaScript;
 using SharpKit.JavaScript.Ast;
@@ -17,19 +18,29 @@ using Mono.Cecil;
 using System.Collections;
 using System.Xml.Linq;
 using ICSharpCode.NRefactory.CSharp;
+using SharpKit.Targets;
 using SharpKit.Targets.Ast;
 using SharpKit.Targets.JavaScript;
 using SharpKit.Utils.Http;
 using Corex.Helpers;
 using Corex.IO.Tools;
 using SharpKit.Compiler.CsToJs;
+using ITypeDefinition = ICSharpCode.NRefactory.TypeSystem.ITypeDefinition;
 
 namespace SharpKit.Compiler
 {
     class CompilerTool : ICompiler
     {
+        public Dictionary<string, object> TargetData { get; private set; }
+
+        public ICompilation Compilation
+        {
+            get { return Project.Compilation; }
+        }
+
         public CompilerTool()
         {
+            TargetData = new Dictionary<string, object>();
             EmbeddedResourceFiles = new List<string>();
             CompilerConfiguration.LoadCurrent();
             NativeAnonymousDelegateSupportStatement = Js.CodeStatement(NativeAnonymousDelegateSupportCode);
@@ -119,7 +130,7 @@ namespace SharpKit.Compiler
 
         #region Properties
         //public static CompilerTool Current { get; set; }
-        public CompilerToolArgs Args { get; set; }
+        public CompilerSettings Settings { get; set; }
         public List<SkFile> SkFiles { get; set; }
         public CompilerLogger Log { get; set; }
         public SkProject Project { get; set; }
@@ -144,7 +155,13 @@ namespace SharpKit.Compiler
 
         #region Fields
 
-        TypeConverter TypeConverter;
+        JsTypeConverter TypeConverter;
+        ITypeConverter ICompiler.TypeConverter
+        {
+            get { return TypeConverter; }
+        }
+
+
         JsStatement NativeInheritanceSupportStatement;
         JsStatement NativeExtensionDelegateSupportStatement;
         JsStatement CreateExceptionSupportStatement;
@@ -179,6 +196,8 @@ namespace SharpKit.Compiler
         }
         public int Run()
         {
+            TargetData.Clear();
+
             var x = InternalRun();
             if (BeforeExit != null)
                 BeforeExit();
@@ -196,7 +215,7 @@ namespace SharpKit.Compiler
                 Time(SaveLastInputArgs);
                 WriteArgs();
                 Time(ParseArgs);
-                if (Args.LastArgs)
+                if (Settings.LastArgs)
                 {
                     var tokenizer = new ToolArgsTokenizer();
                     var args = tokenizer.Tokenize(LastArgs);
@@ -205,14 +224,14 @@ namespace SharpKit.Compiler
                     WriteArgs();
                     Time(ParseArgs);
                 }
-                if (Args.CheckForNewVersion)
+                if (Settings.CheckForNewVersion)
                 {
                     Time(CheckForNewVersion);
-                    if (Args.Files.IsNullOrEmpty())
+                    if (Settings.Files.IsNullOrEmpty())
                         return 0;
                 }
 
-                if (!Args.AddBuildTarget.IsNullOrEmpty())
+                if (!Settings.AddBuildTarget.IsNullOrEmpty())
                 {
                     Time(AddBuildTarget);
                     return 0;
@@ -220,9 +239,9 @@ namespace SharpKit.Compiler
 
                 if (Help())
                     return 0;
-                if (Args.Service != null)
+                if (Settings.Service != null)
                 {
-                    var action = Args.Service.ToLower();
+                    var action = Settings.Service.ToLower();
                     if (action == "start")
                     {
                         StartWindowsService();
@@ -334,9 +353,9 @@ namespace SharpKit.Compiler
 
         bool Help()
         {
-            if (Args.Help)
+            if (Settings.Help)
             {
-                CompilerToolArgs.GenerateHelp(System.Console.Out);
+                CompilerSettings.GenerateHelp(System.Console.Out);
                 return true;
             }
             return false;
@@ -358,7 +377,7 @@ namespace SharpKit.Compiler
             //        {
             //            var req = new CompileRequest();
             //            var args = server.DeserializeFromQueryString(typeof(CompilerToolArgs), e.QueryString) as CompilerToolArgs;
-            //            req.Args = args;
+            //            req.Settings = args;
             //            e.Handled = true;
             //            e.Result = req;
             //        }
@@ -385,7 +404,7 @@ namespace SharpKit.Compiler
         void AddBuildTarget()
         {
             bool nuget = false;
-            var file = Args.AddBuildTarget;
+            var file = Settings.AddBuildTarget;
             if (file.EndsWith(";nuget"))
             {
                 nuget = true;
@@ -415,9 +434,9 @@ namespace SharpKit.Compiler
 
         void LoadPlugins()
         {
-            if (Args.Plugins.IsNullOrEmpty())
+            if (Settings.Plugins.IsNullOrEmpty())
                 return;
-            foreach (var plugin in Args.Plugins)
+            foreach (var plugin in Settings.Plugins)
             {
                 try
                 {
@@ -444,14 +463,14 @@ namespace SharpKit.Compiler
         {
 
             TriggerEvent(BeforeSaveNewManifest);
-            CreateManifest(JsFileMerger.ExternalFiles.Select(t => t.TargetFile.Filename).Concat(EmbeddedResourceFiles).ToList()).SaveToFile(Args.ManifestFile);
+            CreateManifest(JsFileMerger.ExternalFiles.Select(t => t.TargetFile.Filename).Concat(EmbeddedResourceFiles).ToList()).SaveToFile(Settings.ManifestFile);
 
             TriggerEvent(AfterSaveNewManifest);
         }
 
         Manifest CreateManifest(List<string> externalFiles)
         {
-            return new ManifestHelper { Args = Args, Log = Log, SkcVersion = SkcVersion, SkcFile = typeof(CompilerTool).Assembly.Location, ExternalFiles = externalFiles }.CreateManifest();
+            return new ManifestHelper { Args = Settings, Log = Log, SkcVersion = SkcVersion, SkcFile = typeof(CompilerTool).Assembly.Location, ExternalFiles = externalFiles }.CreateManifest();
         }
 
         #endregion
@@ -460,11 +479,11 @@ namespace SharpKit.Compiler
 
         bool CheckManifest()
         {
-            if (Args.Rebuild.GetValueOrDefault())
+            if (Settings.Rebuild.GetValueOrDefault())
                 return false;
-            if (!File.Exists(Args.ManifestFile))
+            if (!File.Exists(Settings.ManifestFile))
                 return false;
-            var prev = Manifest.LoadFromFile(Args.ManifestFile);
+            var prev = Manifest.LoadFromFile(Settings.ManifestFile);
             var current = CreateManifest(prev.ExternalFiles.Select(t => t.Filename).ToList());
             Trace.TraceInformation("[{0}] Comparing manifests", DateTime.Now);
             var diff = current.GetManifestDiff(prev);
@@ -475,7 +494,7 @@ namespace SharpKit.Compiler
             }
             else
             {
-                File.Delete(Args.ManifestFile);
+                File.Delete(Settings.ManifestFile);
                 Log.WriteLine("Reasons for rebuild:\n" + diff.ToString());
             }
             return false;
@@ -483,7 +502,7 @@ namespace SharpKit.Compiler
 
         void ParseArgs()
         {
-            Args = CompilerToolArgs.Parse(CommandLineArguments);
+            Settings = CompilerSettings.Parse(CommandLineArguments);
         }
 
         void WriteArgs()
@@ -525,18 +544,18 @@ namespace SharpKit.Compiler
 
         void CalculateMissingArgs()
         {
-            if (Args.CurrentDirectory.IsNotNullOrEmpty())
-                Directory.SetCurrentDirectory(Args.CurrentDirectory);
-            if (Args.Output == null)
-                Args.Output = "output.js";
-            if (Args.ManifestFile == null)
-                Args.ManifestFile = Path.Combine(Path.GetDirectoryName(Args.Output), Args.AssemblyName + ".skccache");
-            if (Args.CodeAnalysisFile == null)
-                Args.CodeAnalysisFile = Path.Combine(Path.GetDirectoryName(Args.Output), Args.AssemblyName + ".CodeAnalysis");
-            if (Args.SecurityAnalysisFile == null)
-                Args.SecurityAnalysisFile = Path.Combine(Path.GetDirectoryName(Args.Output), Args.AssemblyName + ".securityanalysis");
+            if (Settings.CurrentDirectory.IsNotNullOrEmpty())
+                Directory.SetCurrentDirectory(Settings.CurrentDirectory);
+            if (Settings.Output == null)
+                Settings.Output = "output.js";
+            if (Settings.ManifestFile == null)
+                Settings.ManifestFile = Path.Combine(Path.GetDirectoryName(Settings.Output), Settings.AssemblyName + ".skccache");
+            if (Settings.CodeAnalysisFile == null)
+                Settings.CodeAnalysisFile = Path.Combine(Path.GetDirectoryName(Settings.Output), Settings.AssemblyName + ".CodeAnalysis");
+            if (Settings.SecurityAnalysisFile == null)
+                Settings.SecurityAnalysisFile = Path.Combine(Path.GetDirectoryName(Settings.Output), Settings.AssemblyName + ".securityanalysis");
 
-            Defines = Args.define != null ? Args.define.Split(';').ToList() : new List<string>();
+            Defines = Settings.define != null ? Settings.define.Split(';').ToList() : new List<string>();
 
         }
 
@@ -548,20 +567,20 @@ namespace SharpKit.Compiler
             _CustomAttributeProvider = new CustomAttributeProvider();
             Project = new SkProject
             {
-                SourceFiles = Args.Files,
+                SourceFiles = Settings.Files,
                 Defines = Defines,
-                References = Args.References,
+                References = Settings.References,
                 Log = Log,
-                TargetFrameworkVersion = Args.TargetFrameworkVersion,
+                TargetFrameworkVersion = Settings.TargetFrameworkVersion,
                 Compiler = this,
-                AssemblyName = Args.AssemblyName,
+                AssemblyName = Settings.AssemblyName,
             };
             Project.Parse();
             var asm = Project.Compilation.MainAssembly;
             if (asm != null && asm.AssemblyName == null)
             {
                 throw new NotImplementedException();
-                //asm.AssemblyName = Args.AssemblyName;
+                //asm.AssemblyName = Settings.AssemblyName;
             }
 
             TriggerEvent(AfterParseCs);
@@ -571,7 +590,7 @@ namespace SharpKit.Compiler
         {
 
             TriggerEvent(BeforeApplyExternalMetadata);
-            CsExternalMetadata = new CsJsExternalMetadata { Project = Project, Log = Log };
+            CsExternalMetadata = new JsExternalMetadata { Project = Project, Log = Log };
             CsExternalMetadata.Process();
 
             TriggerEvent(AfterApplyExternalMetadata);
@@ -581,12 +600,12 @@ namespace SharpKit.Compiler
         {
             TriggerEvent(BeforeConvertCsToTarget);
             PathMerger = new PathMerger();
-            TypeConverter = new TypeConverter
+            TypeConverter = new JsTypeConverter
             {
                 Compiler = this,
-                Log = Log,
+
                 ExternalMetadata = CsExternalMetadata,
-                AssemblyName = Args.AssemblyName,
+                AssemblyName = Settings.AssemblyName,
                 BeforeExportTypes = byFile =>
                     {
                         var list = new List<ITypeDefinition>();
@@ -598,7 +617,7 @@ namespace SharpKit.Compiler
                         Project.ApplyNavigator(skFiles);
                     }
             };
-            TypeConverter.ConfigureMemberConverter += new Action<MemberConverter>(JsModelImporter_ConfigureJsTypeImporter);
+            TypeConverter.ConfigureMemberConverter += JsModelImporter_ConfigureJsTypeImporter;
             var att = GetJsExportAttribute();
             if (att != null)
             {
@@ -610,17 +629,17 @@ namespace SharpKit.Compiler
 
 
             TypeConverter.Process();
-            SkFiles = TypeConverter.JsFiles.Select(ToSkJsFile).ToList();
+            SkFiles = TypeConverter.TargetFiles.Select(ToSkJsFile).ToList();
 
             TriggerEvent(AfterConvertCsToTarget);
         }
 
-        private SkFile ToSkJsFile(JsFile t)
+        private SkFile ToSkJsFile(TargetFile t)
         {
-            return new SkJsFile { TargetFile = t, Compiler = this };
+            return new SkJsFile { TargetFile = (JsFile)t, Compiler = this };
         }
 
-        void JsModelImporter_ConfigureJsTypeImporter(MemberConverter obj)
+        void JsModelImporter_ConfigureJsTypeImporter(IMemberConverter obj)
         {
             obj.BeforeVisitEntity += me =>
             {
@@ -632,22 +651,22 @@ namespace SharpKit.Compiler
                 if (AfterConvertCsToTargetEntity != null)
                     AfterConvertCsToTargetEntity(me, node);
             };
-            obj.AstNodeConverter.BeforeConvertCsToJsAstNode += node =>
+            obj.BeforeConvertCsToTargetAstNode += node =>
             {
                 if (BeforeConvertCsToTargetAstNode != null)
                     BeforeConvertCsToTargetAstNode(node);
             };
-            obj.AstNodeConverter.AfterConvertCsToJsAstNode += (node, node2) =>
+            obj.AfterConvertCsToTargetAstNode += (node, node2) =>
             {
                 if (AfterConvertCsToTargetAstNode != null)
                     AfterConvertCsToTargetAstNode(node, node2);
             };
-            obj.AstNodeConverter.ResolveResultConverter.BeforeConvertCsToJsResolveResult += res =>
+            obj.BeforeConvertCsToTargetResolveResult += res =>
             {
                 if (BeforeConvertCsToTargetResolveResult != null)
                     BeforeConvertCsToTargetResolveResult(res);
             };
-            obj.AstNodeConverter.ResolveResultConverter.AfterConvertCsToJsResolveResult += (res, node) =>
+            obj.AfterConvertCsToTargetResolveResult += (res, node) =>
             {
                 if (AfterConvertCsToTargetResolveResult != null)
                     AfterConvertCsToTargetResolveResult(res, node);
@@ -664,9 +683,9 @@ namespace SharpKit.Compiler
             Time(GenerateCodeInjectionFile);
 
             JsFileMerger.MergeFiles();
-            if (Args.OutputGeneratedJsFile.IsNotNullOrEmpty())
+            if (Settings.OutputGeneratedJsFile.IsNotNullOrEmpty())
             {
-                var file = JsFileMerger.GetJsFile(Args.OutputGeneratedJsFile, false);
+                var file = JsFileMerger.GetJsFile(Settings.OutputGeneratedJsFile, false);
                 JsFileMerger.MergeFiles(file, SkFiles.OfType<SkJsFile>().Where(t => t != file).ToList());
                 SkFiles.Clear();
                 SkFiles.Add(file);
@@ -910,7 +929,7 @@ namespace SharpKit.Compiler
             var atts = Project.Compilation.MainAssembly.GetMetadatas<JsEmbeddedResourceAttribute>().ToList();
             if (atts.IsNotNullOrEmpty())
             {
-                var asmFilename = Args.Output;
+                var asmFilename = Settings.Output;
                 Log.WriteLine("Loading assembly {0}", asmFilename);
                 var asm = ModuleDefinition.ReadModule(asmFilename);
                 var changed = false;
@@ -943,7 +962,7 @@ namespace SharpKit.Compiler
                 if (changed)
                 {
                     var prms = new WriterParameters { };//TODO:StrongNameKeyPair = new StrongNameKeyPair("Foo.snk") };
-                    var snkFile = Args.NoneFiles.Where(t => t.EndsWith(".snk", StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
+                    var snkFile = Settings.NoneFiles.Where(t => t.EndsWith(".snk", StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
                     if (snkFile != null)
                     {
                         Log.WriteLine("Signing assembly with strong-name keyfile: {0}", snkFile);
@@ -961,7 +980,7 @@ namespace SharpKit.Compiler
 
         bool ShouldCreateNativeImage()
         {
-            if (Args != null && Args.CreateNativeImage)
+            if (Settings != null && Settings.CreateNativeImage)
                 return true;
             return false;
             //if (Debug)

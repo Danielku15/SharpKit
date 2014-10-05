@@ -5,7 +5,7 @@ namespace SharpKit.Compiler
 {
     public abstract class SkFile
     {
-        internal CompilerTool Compiler { get; set; }
+        internal ICompiler Compiler { get; set; }
         public string TempFilename { get; set; }
         public TargetFile TargetFile { get; set; }
         public string Format { get; set; }

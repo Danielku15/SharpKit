@@ -5,23 +5,32 @@ using ICSharpCode.NRefactory.TypeSystem;
 using ICSharpCode.NRefactory.Extensions;
 using SharpKit.Java;
 using SharpKit.Java.Ast;
+using SharpKit.Targets;
+using SharpKit.Targets.Ast;
 
 namespace SharpKit.Compiler.Java
 {
-    class JModelImporter
+    class JTypeConverter : ITypeConverter
     {
+        private List<TargetFile> _jsFiles;
+
         public bool ExportComments { get; set; }
-        public CompilerLogger Log { get; set; }
-        //public CsExternalMetadata ExternalMetadata { get; set; }
-        public SkProject Project { get; set; }
-        public List<JFile> JsFiles { get; set; }
-        //public JsTypeImporter_Clr Clr2Export;
+        public ICsExternalMetadata ExternalMetadata { get; set; }
+        public SkProject Project { get { return Compiler.Project; } }
+
+        public IEnumerable<TargetFile> TargetFiles
+        {
+            get { return _jsFiles; }
+        }
+
         public string AssemblyName { get; set; }
         public bool LongFunctionNames { get; set; }
-        public Action<Dictionary<JFile, List<ITypeDefinition>>> BeforeExportTypes;
-        //JsTypeImporter_Global GlobalExport;
-        JTypeImporter NativeExport;
-        //JsTypeImporter_ExtJs ExtJsExport;
+        public Action<Dictionary<TargetFile, List<ITypeDefinition>>> BeforeExportTypes { get; set; }
+        public ICompiler Compiler { get; set; }
+
+        public event Action<IMemberConverter> ConfigureMemberConverter;
+
+        JMemberConverterNative NativeConverter;
 
         private bool ShouldExportType(ITypeDefinition ce)
         {
@@ -174,9 +183,9 @@ namespace SharpKit.Compiler.Java
         }
 
 
-        private JTypeImporter GetTypeImporter(ITypeDefinition ce)
+        private JMemberConverterNative GetTypeImporter(ITypeDefinition ce)
         {
-            JTypeImporter export;
+            JMemberConverterNative export;
             var isExtJs = JMeta.IsExtJType(ce);
             var isGlobal = JMeta.IsGlobalType(ce) && !isExtJs;
             var isNative = JMeta.IsNativeType(ce) && !isExtJs;
@@ -189,9 +198,9 @@ namespace SharpKit.Compiler.Java
             }
             else if (isNative)
             {
-                if (NativeExport == null)
-                    NativeExport = new JTypeImporter { Compiler = Compiler };
-                export = NativeExport;
+                if (NativeConverter == null)
+                    NativeConverter = new JMemberConverterNative { Compiler = Compiler };
+                export = NativeConverter;
             }
             else if (isExtJs)
             {
@@ -205,26 +214,21 @@ namespace SharpKit.Compiler.Java
             return export;
         }
 
-        private void ConfigureTypeExport(JTypeImporter typeExporter)
+        private void ConfigureTypeExport(JMemberConverterNative typeExporter)
         {
             if (typeExporter.JCodeImporter == null)
             {
-
                 typeExporter.AssemblyName = AssemblyName;
-                typeExporter.JCodeImporter = new JCodeImporter { Log = Log, ExportComments = ExportComments, Project=Project, Compiler=Compiler };
+                typeExporter.JCodeImporter = new JCodeImporter { Log = Compiler.Log, ExportComments = ExportComments, Project=Project, Compiler=Compiler };
                 typeExporter.LongFunctionNames = LongFunctionNames;
-                typeExporter.Log = Log;
-                if(ConfigureJsTypeImporter!=null)
-                    ConfigureJsTypeImporter(typeExporter);
+                typeExporter.Log = Compiler.Log;
+                if (ConfigureMemberConverter != null)
+                    ConfigureMemberConverter(typeExporter);
             }
         }
-        public CompilerTool Compiler { get; set; }
-
-        public event Action<JTypeImporter> ConfigureJsTypeImporter;
 
         JClassDeclaration ExportType(ITypeDefinition ce)
         {
-
             var att = Sk.GetJsTypeAttribute(ce);
             //if (att != null && att.PreCode != null)
             //    unit.Statements.Add(Js.Code(att.PreCode).Statement());
@@ -239,12 +243,6 @@ namespace SharpKit.Compiler.Java
             var unit2 = (JClassDeclaration) importer.Visit(ce).Single();
             return unit2;
         }
-
-
-
-
-
-
     }
 
 

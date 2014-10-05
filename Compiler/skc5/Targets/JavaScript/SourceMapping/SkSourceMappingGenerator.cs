@@ -10,7 +10,7 @@ namespace SharpKit.Compiler.SourceMapping
 {
     class SkSourceMappingGenerator
     {
-        public CompilerTool Compiler { get; set; }
+        public ICompiler Compiler { get; set; }
 
         public void AddMappingDirective(string generatedFilename, string mappingFilename)
         {

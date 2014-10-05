@@ -585,7 +585,7 @@ namespace SharpKit.Compiler.Java
             }
             if (res.Type != null && res.Type.Kind == TypeKind.Enum)
             {
-                return Visit(JTypeImporter.GetValueTypeInitializer(res.Type, Compiler));
+                return Visit(JMemberConverterNative.GetValueTypeInitializer(res.Type, Compiler));
             }
             //var nodes = res.GetNodes();
             //if (nodes.IsNotNullOrEmpty())
@@ -1075,6 +1075,9 @@ namespace SharpKit.Compiler.Java
         {
             return IsNonStatic(res.GetCurrentMethod());
         }
+
+        public event Action<ResolveResult> BeforeConvertCsToJResolveResult;
+        public event Action<ResolveResult, JNode> AfterConvertCsToJResolveResult;
 
     }
 

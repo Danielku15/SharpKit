@@ -21,9 +21,9 @@ namespace SharpKit.Compiler
 
         public CompileResponse Compile(CompileRequest req)
         {
-            var skc = new CompilerTool
+            var skc = new TargetAwareCompiler
             {
-                Args = req.Args,
+                Settings = req.Args,
                 Log = new CompilerLogger { Console = { AutoFlush = false } },
             };
             if (req.CommandLineArgs.IsNotNullOrEmpty())
@@ -48,7 +48,7 @@ namespace SharpKit.Compiler
         [DataMember]
         public string CommandLineArgs { get; set; }
         [DataMember]
-        public CompilerToolArgs Args { get; set; }
+        public CompilerSettings Args { get; set; }
     }
 
     [DataContract]

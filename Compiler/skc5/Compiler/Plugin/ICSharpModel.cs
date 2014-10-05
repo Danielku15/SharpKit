@@ -49,7 +49,5 @@ namespace SharpKit.Compiler
         void AddCustomAttribute(IAssembly me, Attribute att);
         T GetCustomAttribute<T>(IAssembly me) where T : Attribute;
         IEnumerable<T> GetCustomAttributes<T>(IAssembly me) where T : Attribute;
-
     }
-
 }

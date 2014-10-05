@@ -7,6 +7,7 @@ using ICSharpCode.NRefactory.TypeSystem;
 using SharpKit.JavaScript.Ast;
 using ICSharpCode.NRefactory.Extensions;
 using System.Linq.Expressions;
+using SharpKit.Targets.JavaScript;
 
 namespace SharpKit.Compiler.CsToJs
 {
@@ -214,7 +215,7 @@ namespace SharpKit.Compiler.CsToJs
 
         public ResolveResultConverter Importer { get; set; }
         public SkProject Project { get; set; }
-        public CompilerTool Compiler { get; set; }
+        public ICompiler Compiler { get; set; }
 
         JsNode Visit(ResolveResult res)
         {

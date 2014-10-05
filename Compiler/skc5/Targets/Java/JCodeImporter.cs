@@ -8,14 +8,16 @@ using ICSharpCode.NRefactory.CSharp.Resolver;
 using ICSharpCode.NRefactory.Semantics;
 using ICSharpCode.NRefactory.Extensions;
 using Mirrored.SharpKit.Java;
+using SharpKit.Compiler.Ast;
 using SharpKit.Java;
 using SharpKit.Java.Ast;
+using SharpKit.Targets;
 
 namespace SharpKit.Compiler.Java
 {
     partial class JCodeImporter 
     {
-        public CompilerTool Compiler { get; set; }
+        public ICompiler Compiler { get; set; }
         public SkProject Project { get; set; }
         #region Visit
         int VisitDepth;
@@ -55,8 +57,8 @@ namespace SharpKit.Compiler.Java
                 if (region != null && !region.IsEmpty)
                     Log.Debug(String.Format("JCodeImporter: Visit AstNode: {0}", ToDebug(node)));
             }
-            if (BeforeConvertCsToJAstNode != null)
-                BeforeConvertCsToJAstNode(node);
+            if (BeforeConvertCsToTargetAstNode != null)
+                BeforeConvertCsToTargetAstNode(node);
             JNode node2 = node.AcceptVisitor(this);
             //if (node2 != null)
             //{
@@ -64,8 +66,8 @@ namespace SharpKit.Compiler.Java
             //    if (ex.AstNode == null)
             //        ex.AstNode = node;
             //}
-            if (AfterConvertCsToJAstNode != null)
-                AfterConvertCsToJAstNode(node, node2);
+            if (AfterConvertCsToTargetAstNode != null)
+                AfterConvertCsToTargetAstNode(node, node2);
             return node2;
 
         }
@@ -426,15 +428,7 @@ namespace SharpKit.Compiler.Java
 
         #endregion
 
-
-        public event Action<AstNode> BeforeConvertCsToJAstNode;
-
-        public event Action<AstNode, JNode> AfterConvertCsToJAstNode;
-
-        public event Action<ResolveResult> BeforeConvertCsToJResolveResult;
-
-        public event Action<ResolveResult, JNode> AfterConvertCsToJResolveResult;
-
-
+        public event Action<AstNode> BeforeConvertCsToTargetAstNode;
+        public event Action<AstNode, ITargetNode> AfterConvertCsToTargetAstNode;
     }
 }

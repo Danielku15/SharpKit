@@ -10,7 +10,7 @@ namespace SharpKit.Compiler
         public string TargetTypeName { get; set; }
     }
 
-    interface ICsExternalMetadata
+    public interface ICsExternalMetadata
     {
         IEnumerable<ITypeDefinition> TypesWithExternalAttributes { get; }
 

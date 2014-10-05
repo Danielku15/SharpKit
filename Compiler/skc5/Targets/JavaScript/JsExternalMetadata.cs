@@ -11,7 +11,7 @@ namespace SharpKit.Compiler.JavaScript
     /// Finds assembly JsTypeAttribute(s) with TargetType, and adds them to the target type.
     /// Finds assembly JsMethodAttribute(s) with TargetType and TargetMethod, and adds them to the target method(s)
     /// </summary>
-    class CsJsExternalMetadata : ICsExternalMetadata
+    class JsExternalMetadata : ICsExternalMetadata
     {
         private readonly List<ITypeDefinition> _typesWithExternalAttributes = new List<ITypeDefinition>();
 
