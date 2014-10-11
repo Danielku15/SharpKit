@@ -159,12 +159,11 @@ namespace SharpKit.Targets.JavaScript
                     var ns2 = tokens.Take(i + 1).StringJoin(".");
                     JsStatement st;
                     if (i == 0)
-                        st = Js.Var(ns2, Js.Json()).Statement();
+                        st = Js.Var(ns2, Js.Member(ns2).Or(Js.Json())).Statement();
                     else
-                        st = Js.Member(ns2).Assign(Js.Json()).Statement();
-                    var st2 = Js.If(Js.Typeof(Js.Member(ns2)).Equal(Js.String("undefined"))).Then(st);
-                    unit.Statements.Add(st2);
-                    st2.AddAnnotation(new NamespaceVerificationAnnotation { Namespace = ns2 });//.Ex(true).NamespaceVerification = ns2;
+                        st = Js.Member(ns2).Assign(Js.Member(ns2).Or(Js.Json())).Statement();
+                    unit.Statements.Add(st);
+                    st.AddAnnotation(new NamespaceVerificationAnnotation { Namespace = ns2 });//.Ex(true).NamespaceVerification = ns2;
                 }
             }
         }
