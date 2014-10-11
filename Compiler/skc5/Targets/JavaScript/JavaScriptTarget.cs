@@ -124,7 +124,7 @@ namespace SharpKit.Targets.JavaScript
 
             foreach (var ta in TypedArrays)
             {
-                var define = Js.If(Js.Typeof(Js.Member(ta)).Equal(Js.Value("undefined")), Js.Var(ta, Js.Member("Array")).Statement());
+                var define = Js.Var(ta, Js.Member(ta).Or(Js.Member("Array"))).Statement();
                 _codeInjections.Add(new CodeInjection
                 {
                     FunctionName = ta,

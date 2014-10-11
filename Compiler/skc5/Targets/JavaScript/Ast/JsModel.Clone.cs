@@ -359,6 +359,19 @@ namespace SharpKit.Targets.JavaScript.Ast
             node2.Declaration = Declaration.Clone();
         }
     }
+    partial class JsCodeStatement
+    {
+        public override JsNode New()
+        {
+            return new JsCodeStatement();
+        }
+        public override void Clone(JsNode node)
+        {
+            base.Clone(node);
+            var node2 = (JsCodeStatement)node;
+            node2.Code = Code;
+        }
+    }
     partial class JsCommentStatement
     {
         public override JsNode New()
