@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace SharpKit.Compiler.SourceMapping
+namespace SharpKit.Targets.JavaScript.SourceMapping
 {
     static class SourceMappingHelper
     {

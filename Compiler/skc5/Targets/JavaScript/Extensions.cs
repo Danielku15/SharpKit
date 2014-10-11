@@ -4,10 +4,10 @@ using System.Linq.Expressions;
 using ICSharpCode.NRefactory.CSharp.Resolver;
 using ICSharpCode.NRefactory.Semantics;
 using ICSharpCode.NRefactory.TypeSystem;
-using Mirrored.SharpKit.JavaScript;
-using SharpKit.JavaScript.Ast;
+using SharpKit.Targets.JavaScript;
+using SharpKit.Targets.JavaScript.Ast;
 
-namespace SharpKit.Compiler.CsToJs
+namespace SharpKit.Targets.JavaScript
 {
     static class Extensions
     {
@@ -188,7 +188,7 @@ namespace SharpKit.Compiler.CsToJs
     /// <summary>
     /// A type used internally by the Js Type System
     /// </summary>
-    [JsTypeAttribute(JsMode.Json)]
+    [JsType(JsMode.Json)]
     class JsClrType
     {
         public JsObject GetDefinition(bool isStatic)
@@ -218,7 +218,7 @@ namespace SharpKit.Compiler.CsToJs
         public JsFunction cctor { get; set; }
     }
 
-    [JsTypeAttribute(JsMode.Json)]
+    [JsType(JsMode.Json)]
     [JsEnum(ValuesAsNames = true)]
     enum JsClrTypeKind
     {

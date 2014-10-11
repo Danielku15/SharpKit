@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using ICSharpCode.NRefactory.TypeSystem;
 using ICSharpCode.NRefactory.Semantics;
-using Mirrored.SharpKit.JavaScript;
 using System.Collections.Concurrent;
 using ICSharpCode.NRefactory.Extensions;
+using SharpKit.Targets.JavaScript;
 
 namespace SharpKit.Compiler
 {
@@ -174,7 +174,7 @@ namespace SharpKit.Compiler
         public static bool IsAttributeSupportedForThisVersion(object att)
         {
             var att2 = att as ISupportSharpKitVersion;
-            if (att2 == null || att2.SharpKitVersion.IsNullOrEmpty())
+            if (att2 == null || CssCompressorExtensions.IsNullOrEmpty(att2.SharpKitVersion))
                 return true;
             var version = att2.SharpKitVersion;
             if (!version.Contains("5") && !version.Contains("4+"))

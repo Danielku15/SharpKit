@@ -2,7 +2,7 @@
 using System.Text;
 using ICSharpCode.NRefactory.CSharp;
 
-namespace SharpKit.Compiler
+namespace SharpKit.Targets.Utils
 {
     class CommentsExporter
     {

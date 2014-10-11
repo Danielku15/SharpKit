@@ -21,7 +21,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 
-namespace SharpKit.JavaScript.Ast
+namespace SharpKit.Targets.JavaScript.Ast
 {
     /// <summary>
     /// Provides an interface to handle annotations in an object.

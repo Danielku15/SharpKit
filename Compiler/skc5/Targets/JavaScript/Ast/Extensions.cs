@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace SharpKit.JavaScript.Ast
+namespace SharpKit.Targets.JavaScript.Ast
 {
     static class JsNodeExtensions
     {

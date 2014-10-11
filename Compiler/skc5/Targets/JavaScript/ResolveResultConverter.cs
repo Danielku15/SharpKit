@@ -6,13 +6,13 @@ using ICSharpCode.NRefactory.Semantics;
 using ICSharpCode.NRefactory.TypeSystem;
 using ICSharpCode.NRefactory.CSharp;
 using ICSharpCode.NRefactory.TypeSystem.Implementation;
-using Mirrored.SharpKit.JavaScript;
-using SharpKit.JavaScript.Ast;
+using SharpKit.Compiler;
+using SharpKit.Compiler.Plugin;
 using ICSharpCode.NRefactory.Extensions;
 using System.Linq.Expressions;
-using SharpKit.Targets.JavaScript;
+using SharpKit.Targets.JavaScript.Ast;
 
-namespace SharpKit.Compiler.CsToJs
+namespace SharpKit.Targets.JavaScript
 {
     class ResolveResultConverter : ICSharpResolveResultVisitor<JsNode>
     {
@@ -792,9 +792,5 @@ namespace SharpKit.Compiler.CsToJs
         }
 
         #endregion
-
-
     }
-
-
 }

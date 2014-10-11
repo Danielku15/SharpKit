@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.Ajax.Utilities;
 
-namespace SharpKit.JavaScript
+namespace SharpKit.Targets.JavaScript
 {
     class JsCodeInliner
     {

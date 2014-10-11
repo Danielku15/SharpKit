@@ -4,11 +4,12 @@ using System.Linq;
 using System.Text;
 using ICSharpCode.NRefactory.TypeSystem;
 using ICSharpCode.NRefactory.Semantics;
-using SharpKit.JavaScript.Ast;
 using ICSharpCode.NRefactory.Extensions;
 using ICSharpCode.NRefactory.CSharp;
+using SharpKit.Compiler;
+using SharpKit.Targets.JavaScript.Ast;
 
-namespace SharpKit.Compiler.CsToJs
+namespace SharpKit.Targets.JavaScript
 {
     class JsMemberConverterClr : JsMemberConverter
     {
@@ -344,7 +345,6 @@ namespace SharpKit.Compiler.CsToJs
 
         #endregion
 
-
         #region Export Attributes
 
         private List<JsClrAttribute> ExportCustomAttributes(ITypeDefinition ce)
@@ -454,10 +454,5 @@ namespace SharpKit.Compiler.CsToJs
         }
 
         #endregion
-
-
     }
-
-
-
 }

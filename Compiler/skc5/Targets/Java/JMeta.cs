@@ -3,10 +3,9 @@ using System.IO;
 using System.Linq;
 using ICSharpCode.NRefactory.Extensions;
 using ICSharpCode.NRefactory.TypeSystem;
-using Mirrored.SharpKit.Java;
 using SharpKit.Compiler;
 
-namespace SharpKit.Java
+namespace SharpKit.Targets.Java
 {
     static class JMeta
     {

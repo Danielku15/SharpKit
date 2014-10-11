@@ -1,9 +1,9 @@
 ﻿using System;
 using ICSharpCode.NRefactory.TypeSystem;
-using SharpKit.Compiler.Ast;
-using SharpKit.JavaScript.Ast;
+using SharpKit.Targets.JavaScript.Ast;
+using SharpKit.Targets.Ast;
 
-namespace SharpKit.Java.Ast
+namespace SharpKit.Targets.Java.Ast
 {
     partial class JNode : ITargetNode
     {

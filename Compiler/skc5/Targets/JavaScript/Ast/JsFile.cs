@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using SharpKit.Compiler;
+using SharpKit.Compiler.Plugin;
 using SharpKit.Targets.Ast;
-using SharpKit.Targets.JavaScript;
 
-namespace SharpKit.JavaScript.Ast
+namespace SharpKit.Targets.JavaScript.Ast
 {
     public class JsFile : TargetFile
     {
@@ -63,5 +63,16 @@ namespace SharpKit.JavaScript.Ast
     public partial class JsExternalFileUnit : JsUnit
     {
         public string Filename { get; set; }
+
+        public override JsNode New()
+        {
+            return new JsExternalFileUnit();
+        }
+        public override void Clone(JsNode node)
+        {
+            base.Clone(node);
+            var node2 = (JsExternalFileUnit)node;
+            node2.Filename = Filename;
+        }
     }
 }

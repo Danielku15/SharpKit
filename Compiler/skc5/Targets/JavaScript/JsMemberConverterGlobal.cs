@@ -1,14 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using ICSharpCode.NRefactory.TypeSystem;
-using SharpKit.JavaScript.Ast;
 using ICSharpCode.NRefactory.Extensions;
+using SharpKit.Targets.JavaScript.Ast;
 
-namespace SharpKit.Compiler.CsToJs
+namespace SharpKit.Targets.JavaScript
 {
     class JsMemberConverterGlobal : JsMemberConverter
     {
-
         public override JsNode ExportConstructor(IMethod ctor)
         {
             var func = (JsFunction)base.ExportConstructor(ctor);
@@ -60,7 +59,5 @@ namespace SharpKit.Compiler.CsToJs
             var st = func.Statement();
             return st;
         }
-
     }
-
 }

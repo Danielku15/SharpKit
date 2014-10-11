@@ -1,7 +1,8 @@
 ﻿using System.Collections.Generic;
 using ICSharpCode.NRefactory.TypeSystem;
+using SharpKit.Compiler;
 
-namespace SharpKit.Compiler
+namespace SharpKit.Targets
 {
     class ExternalAttribute
     {

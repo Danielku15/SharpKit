@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using SharpKit.Compiler.Ast;
+using SharpKit.Targets.Ast;
 
-namespace SharpKit.JavaScript.Ast
+namespace SharpKit.Targets.JavaScript.Ast
 {
     /// <summary>
     /// A line/column position.
@@ -214,6 +214,7 @@ namespace SharpKit.JavaScript.Ast
     {
         public List<string> Comments { get; set; }
     }
+
     public partial class JsCodeStatement : JsStatement
     {
         public JsCodeStatement()
@@ -221,16 +222,6 @@ namespace SharpKit.JavaScript.Ast
             NodeType = JsNodeType.CodeStatement;
         }
         public string Code { get; set; }
-        public override void Clone(JsNode node)
-        {
-            base.Clone(node);
-            var st = (JsCodeStatement)node;
-            st.Code = Code;
-        }
-        public override JsNode New()
-        {
-            return new JsCodeStatement();
-        }
     }
 
     #region Statements
@@ -455,6 +446,7 @@ namespace SharpKit.JavaScript.Ast
         public bool IsStringLiteral { get; set; }
         public string Name { get; set; }
     }
+
     public partial class JsCodeExpression : JsExpression
     {
         public string Code { get; set; }

@@ -1,8 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using SharpKit.Compiler;
-using SharpKit.Compiler.Java;
-using SharpKit.Compiler.JavaScript;
 
 namespace SharpKit.Targets.Java
 {

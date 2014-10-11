@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Mirrored.SharpKit.Java
+namespace SharpKit.Targets.Java
 {
     #region JsTypeAttribute
     ///<summary>

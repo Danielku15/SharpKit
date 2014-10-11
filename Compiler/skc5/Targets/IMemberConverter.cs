@@ -2,7 +2,7 @@
 using ICSharpCode.NRefactory.CSharp;
 using ICSharpCode.NRefactory.Semantics;
 using ICSharpCode.NRefactory.TypeSystem;
-using SharpKit.Compiler.Ast;
+using SharpKit.Targets.Ast;
 
 namespace SharpKit.Targets
 {

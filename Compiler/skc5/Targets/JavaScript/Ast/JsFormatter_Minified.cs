@@ -1,4 +1,4 @@
-﻿namespace SharpKit.JavaScript.Ast
+﻿namespace SharpKit.Targets.JavaScript.Ast
 {
     class JsFormatter_Minified : JsFormatter
     {

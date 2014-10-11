@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using SharpKit.Compiler;
-using SharpKit.Compiler.SourceMapping;
-using SharpKit.JavaScript.Ast;
+using SharpKit.Targets.JavaScript.Ast;
+using SharpKit.Targets.JavaScript.SourceMapping;
+using SharpKit.Targets.Utils;
 
 namespace SharpKit.Targets.JavaScript
 {

@@ -1,8 +1,5 @@
-﻿using System;
-using System.Configuration;
+﻿using System.Configuration;
 using System.Collections.Specialized;
-using System.Globalization;
-using System.Threading;
 
 namespace SharpKit.Compiler
 {

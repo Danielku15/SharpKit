@@ -2,13 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Mirrored.SharpKit.JavaScript;
-using ICSharpCode.NRefactory.TypeSystem;
-using SharpKit.JavaScript.Ast;
 using ICSharpCode.NRefactory.Extensions;
-using SharpKit.Compiler.CsToJs;
+using ICSharpCode.NRefactory.TypeSystem;
+using SharpKit.Compiler;
+using SharpKit.Targets.JavaScript.Ast;
 
-namespace SharpKit.Compiler
+namespace SharpKit.Targets.JavaScript
 {
     /// <summary>
     /// Provides utilities for proper cs to js naming
@@ -365,7 +364,7 @@ namespace SharpKit.Compiler
                         {
                             if (name.StartsWith(att.Namespace))
                             {
-                                if (att.JsNamespace.IsNullOrEmpty())
+                                if (CssCompressorExtensions.IsNullOrEmpty(att.JsNamespace))
                                     name = name.ReplaceFirst(att.Namespace + ".", "");
                                 else
                                     name = name.ReplaceFirst(att.Namespace, att.JsNamespace);
@@ -412,7 +411,7 @@ namespace SharpKit.Compiler
                         {
                             if (name.StartsWith(att.Namespace))
                             {
-                                if (att.JsNamespace.IsNullOrEmpty())
+                                if (CssCompressorExtensions.IsNullOrEmpty(att.JsNamespace))
                                     name = name.ReplaceFirst(att.Namespace + ".", "");
                                 else
                                     name = name.ReplaceFirst(att.Namespace, att.JsNamespace);
@@ -528,7 +527,7 @@ namespace SharpKit.Compiler
                 //var y = me.HasFlag(entity_flags.f_method_Virtual);
                 return true;
             }
-            if (me.Parameters.IsNullOrEmpty())
+            if (CssCompressorExtensions.IsNullOrEmpty(me.Parameters))
                 return false;
             var ce = me.GetDeclaringTypeDefinition();
             if (me.IsConstructor)

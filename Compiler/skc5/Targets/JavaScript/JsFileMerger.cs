@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using ICSharpCode.NRefactory.TypeSystem;
-using Mirrored.SharpKit.JavaScript;
-using System.IO;
-using SharpKit.JavaScript.Ast;
-using SharpKit.Targets.JavaScript;
+using SharpKit.Compiler;
+using SharpKit.Compiler.Plugin;
+using SharpKit.Targets.JavaScript.Ast;
 
-namespace SharpKit.Compiler
+namespace SharpKit.Targets.JavaScript
 {
     class JsFileMerger
     {
@@ -35,7 +35,7 @@ namespace SharpKit.Compiler
 
         bool FileEquals(string file1, string file2)
         {
-            return Path.GetFullPath(file1).EqualsIgnoreCase(Path.GetFullPath(file2));
+            return CssCompressorExtensions.EqualsIgnoreCase(Path.GetFullPath(file1), Path.GetFullPath(file2));
         }
 
         public SkJsFile GetJsFile(string filename, bool isExternal)

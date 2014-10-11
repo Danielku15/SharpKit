@@ -16,10 +16,8 @@ using System.Diagnostics;
  * limitations under the License.
  */
 
-namespace SharpKit.Compiler.SourceMapping
+namespace SharpKit.Targets.JavaScript.SourceMapping
 {
-
-
     ///
     /// <summary> * A utility class for working with Base64 values.
     /// * @author johnlenz@google.com (John Lenz) </summary>

@@ -5,12 +5,10 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using ICSharpCode.NRefactory.CSharp;
-using Mirrored.SharpKit.JavaScript;
+using SharpKit.Targets.JavaScript;
 using Mono.Cecil;
 using SharpKit.Compiler;
-using SharpKit.Compiler.CsToJs;
-using SharpKit.Compiler.JavaScript;
-using SharpKit.JavaScript.Ast;
+using SharpKit.Targets.JavaScript.Ast;
 
 namespace SharpKit.Targets.JavaScript
 {

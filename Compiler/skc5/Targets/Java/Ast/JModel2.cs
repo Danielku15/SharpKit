@@ -1,8 +1,9 @@
-﻿using Corex.Collections.Generic;
-using ICSharpCode.NRefactory.TypeSystem;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
-namespace SharpKit.Java.Ast
+using Corex.Collections.Generic;
+using ICSharpCode.NRefactory.TypeSystem;
+
+namespace SharpKit.Targets.Java.Ast
 {
     [DebuggerStepThrough]
     partial class JNode

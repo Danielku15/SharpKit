@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace SharpKit.Compiler
+namespace SharpKit.Targets.JavaScript
 {
     static class CssCompressorExtensions
     {

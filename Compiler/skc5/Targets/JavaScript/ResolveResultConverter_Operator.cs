@@ -4,12 +4,13 @@ using System.Linq;
 using ICSharpCode.NRefactory.CSharp.Resolver;
 using ICSharpCode.NRefactory.Semantics;
 using ICSharpCode.NRefactory.TypeSystem;
-using SharpKit.JavaScript.Ast;
+using SharpKit.Compiler;
+using SharpKit.Compiler.Plugin;
+using SharpKit.Targets.JavaScript.Ast;
 using ICSharpCode.NRefactory.Extensions;
 using System.Linq.Expressions;
-using SharpKit.Targets.JavaScript;
 
-namespace SharpKit.Compiler.CsToJs
+namespace SharpKit.Targets.JavaScript
 {
     class ResolveResultVisitor_Operator
     {

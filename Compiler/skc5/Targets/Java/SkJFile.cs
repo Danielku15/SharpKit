@@ -1,9 +1,10 @@
 ﻿using System;
 using System.IO;
 using SharpKit.Compiler;
-using SharpKit.Java.Ast;
+using SharpKit.Targets.Java.Ast;
+using SharpKit.Targets.Utils;
 
-namespace SharpKit.Targets.JavaScript
+namespace SharpKit.Targets.Java
 {
     class SkJFile : SkFile<JFile>
     {

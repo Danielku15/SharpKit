@@ -2,23 +2,22 @@
 using System.Collections.Generic;
 using System.Collections;
 using System.Linq;
-using Mirrored.SharpKit.JavaScript;
 using System.Diagnostics;
 using ICSharpCode.NRefactory.TypeSystem;
 using ICSharpCode.NRefactory.CSharp;
 using ICSharpCode.NRefactory.TypeSystem.Implementation;
 using ICSharpCode.NRefactory.Semantics;
 using ICSharpCode.NRefactory.CSharp.Resolver;
-using SharpKit.Compiler.Ast;
-using SharpKit.JavaScript.Ast;
+using SharpKit.Compiler;
+using SharpKit.Compiler.Plugin;
+using SharpKit.Targets.JavaScript.Ast;
 using ICSharpCode.NRefactory.Extensions;
-using SharpKit.Targets;
+using SharpKit.Targets.Ast;
 
-namespace SharpKit.Compiler.CsToJs
+namespace SharpKit.Targets.JavaScript
 {
     class JsMemberConverter : IMemberConverter
     {
-
         public bool LongFunctionNames { get; set; }
         public AstNodeConverter AstNodeConverter { get; set; }
         public string AssemblyName { get; set; }

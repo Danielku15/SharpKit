@@ -1,4 +1,4 @@
-﻿using SharpKit.Compiler;
+﻿using SharpKit.Targets.Utils;
 
 namespace SharpKit.Targets.Ast
 {

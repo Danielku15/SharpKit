@@ -1,6 +1,6 @@
 using System.Diagnostics;
 
-namespace SharpKit.JavaScript.Ast
+namespace SharpKit.Targets.JavaScript.Ast
 {
     public enum JsNodeType
     {

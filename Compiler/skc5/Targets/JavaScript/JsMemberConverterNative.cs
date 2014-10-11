@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using ICSharpCode.NRefactory.TypeSystem;
 using System.IO;
-using SharpKit.JavaScript.Ast;
 using ICSharpCode.NRefactory.Extensions;
+using SharpKit.Compiler;
+using SharpKit.Targets.JavaScript.Ast;
 
-namespace SharpKit.Compiler.CsToJs
+namespace SharpKit.Targets.JavaScript
 {
     class JsMemberConverterNative : JsMemberConverter
     {
-
         public override JsNode _VisitClass(ITypeDefinition ce)
         {
             var unit = new JsUnit { Statements = new List<JsStatement>() };
@@ -187,7 +187,5 @@ namespace SharpKit.Compiler.CsToJs
         }
 
         #endregion
-
     }
-
 }

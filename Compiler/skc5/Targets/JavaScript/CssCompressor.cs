@@ -2,8 +2,9 @@
 using System.Collections;
 using System.Text;
 using System.Text.RegularExpressions;
+using SharpKit.Compiler;
 
-namespace SharpKit.Compiler
+namespace SharpKit.Targets.JavaScript
 {
     static class CssCompressor
     {
@@ -274,9 +275,9 @@ namespace SharpKit.Compiler
             while (match.Success)
             {
                 // Test for AABBCC pattern.
-                if (match.Groups[3].Value.EqualsIgnoreCase(match.Groups[4].Value) &&
-                    match.Groups[5].Value.EqualsIgnoreCase(match.Groups[6].Value) &&
-                    match.Groups[7].Value.EqualsIgnoreCase(match.Groups[8].Value))
+                if (CssCompressorExtensions.EqualsIgnoreCase(match.Groups[3].Value, match.Groups[4].Value) &&
+                    CssCompressorExtensions.EqualsIgnoreCase(match.Groups[5].Value, match.Groups[6].Value) &&
+                    CssCompressorExtensions.EqualsIgnoreCase(match.Groups[7].Value, match.Groups[8].Value))
                 {
                     string replacement = String.Concat(match.Groups[1].Value, match.Groups[2].Value, "#",
                                                        match.Groups[3].Value, match.Groups[5].Value,

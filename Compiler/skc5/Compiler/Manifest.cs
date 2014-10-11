@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
+using SharpKit.Compiler.Plugin;
+using SharpKit.Targets.JavaScript;
 using SharpKit.Utils;
 using System.Diagnostics;
 
@@ -251,7 +253,7 @@ namespace SharpKit.Compiler
             if (NewDefines != null)
             {
                 var defs = NewDefines.Split(';');
-                var oldDefs = OldDefines.IsNullOrEmpty() ? new string[] { } : OldDefines.Split(';');
+                var oldDefs = CssCompressorExtensions.IsNullOrEmpty(OldDefines) ? new string[] { } : OldDefines.Split(';');
                 var defDiff = new CollectionDiff<string>(defs, oldDefs);
                 if (defDiff.NewItems.Count() > 0)
                     sb.AppendFormat(defDiff.NewItems.StringConcat("Defined symbols added: ", ", ", "\n"));
@@ -261,7 +263,7 @@ namespace SharpKit.Compiler
             if (NewLoadedPlugins != null)
             {
                 var plgs = NewLoadedPlugins.Split(',');
-                var olgPlgs = OldLoadedPlugins.IsNullOrEmpty() ? new string[] { } : OldLoadedPlugins.Split(';');
+                var olgPlgs = CssCompressorExtensions.IsNullOrEmpty(OldLoadedPlugins) ? new string[] { } : OldLoadedPlugins.Split(';');
                 var plgDiff = new CollectionDiff<string>(plgs, olgPlgs);
                 if (plgDiff.NewItems.Count() > 0)
                     sb.AppendFormat(plgDiff.NewItems.StringConcat("Defined symbols added:\n", ",\n", "\n"));

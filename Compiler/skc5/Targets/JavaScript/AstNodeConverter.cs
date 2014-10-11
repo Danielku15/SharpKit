@@ -6,10 +6,13 @@ using System.Diagnostics;
 using ICSharpCode.NRefactory.TypeSystem;
 using ICSharpCode.NRefactory.CSharp.Resolver;
 using ICSharpCode.NRefactory.Semantics;
-using SharpKit.JavaScript.Ast;
+using SharpKit.Compiler;
+using SharpKit.Compiler.Plugin;
 using ICSharpCode.NRefactory.Extensions;
+using SharpKit.Targets.JavaScript.Ast;
+using SharpKit.Targets.Utils;
 
-namespace SharpKit.Compiler.CsToJs
+namespace SharpKit.Targets.JavaScript
 {
     partial class AstNodeConverter : IAstVisitor<JsNode>
     {

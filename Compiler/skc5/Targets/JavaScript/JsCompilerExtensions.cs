@@ -1,5 +1,5 @@
-﻿using Mirrored.SharpKit.JavaScript;
-using SharpKit.Compiler;
+﻿using SharpKit.Compiler;
+using SharpKit.Compiler.Plugin;
 
 namespace SharpKit.Targets.JavaScript
 {

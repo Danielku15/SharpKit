@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace SharpKit.TypeScript
+namespace SharpKit.Targets.JavaScript.TypeScript
 {
     class TsWriter : ITsEntityVisitor
     {

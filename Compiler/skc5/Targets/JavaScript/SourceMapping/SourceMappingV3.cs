@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Web.Script.Serialization;
-using System.IO;
 
-namespace SharpKit.Compiler.SourceMapping
+namespace SharpKit.Targets.JavaScript.SourceMapping
 {
     ///<summary>
     /// Writes out the source map in the following format (line numbers are for

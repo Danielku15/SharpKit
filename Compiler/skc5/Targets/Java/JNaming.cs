@@ -3,12 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using ICSharpCode.NRefactory.Extensions;
 using ICSharpCode.NRefactory.TypeSystem;
-using Mirrored.SharpKit.Java;
-using SharpKit.Compiler.Java;
 using SharpKit.Compiler;
-using SharpKit.Java.Ast;
+using SharpKit.Targets.Java.Ast;
 
-namespace SharpKit.Java
+namespace SharpKit.Targets.Java
 {
     /// <summary>
     /// Provides utilities for proper cs to j naming

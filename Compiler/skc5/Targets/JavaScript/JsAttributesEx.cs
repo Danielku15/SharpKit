@@ -1,7 +1,7 @@
 ﻿using System;
 using ICSharpCode.NRefactory.TypeSystem;
 
-namespace Mirrored.SharpKit.JavaScript
+namespace SharpKit.Targets.JavaScript
 {
     partial class JsTypeAttribute : Attribute, ISupportSharpKitVersion
     {
@@ -28,13 +28,10 @@ namespace Mirrored.SharpKit.JavaScript
     interface ISupportSourceAttribute
     {
         IAttribute SourceAttribute { get; set; }
-
     }
 
     interface ISupportSharpKitVersion
     {
         string SharpKitVersion { get; set; }
-
     }
-
 }

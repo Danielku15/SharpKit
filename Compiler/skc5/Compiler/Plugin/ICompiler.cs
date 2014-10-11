@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using ICSharpCode.NRefactory.Semantics;
 using ICSharpCode.NRefactory.CSharp;
-using SharpKit.Compiler.Ast;
+using ICSharpCode.NRefactory.Semantics;
 using ICSharpCode.NRefactory.TypeSystem;
 using SharpKit.Targets;
+using SharpKit.Targets.Ast;
+using SharpKit.Targets.JavaScript;
 
-namespace SharpKit.Compiler
+namespace SharpKit.Compiler.Plugin
 {
     /// <summary>
     /// Compiler events by order:

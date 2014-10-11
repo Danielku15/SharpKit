@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using SharpKit.Compiler;
-using SharpKit.JavaScript.Ast;
+using SharpKit.Compiler.Plugin;
+using SharpKit.Targets.JavaScript.Ast;
 using SharpKit.Targets.Ast;
 using SharpKit.Targets.JavaScript;
 

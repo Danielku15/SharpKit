@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using SharpKit.Java.Ast;
+using SharpKit.Targets.Java.Ast;
 
-namespace SharpKit.Compiler
+namespace SharpKit.Targets.Java
 {
     class JYieldRefactorer
     {

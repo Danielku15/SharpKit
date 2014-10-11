@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace SharpKit.TypeScript
+namespace SharpKit.Targets.JavaScript.TypeScript
 {
     class VisitableWriter<T> where T : class
     {

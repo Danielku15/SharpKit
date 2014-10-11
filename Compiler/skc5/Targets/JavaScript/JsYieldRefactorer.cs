@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using SharpKit.JavaScript.Ast;
+using SharpKit.Targets.JavaScript.Ast;
 
-namespace SharpKit.Compiler
+namespace SharpKit.Targets.JavaScript
 {
     class JsYieldRefactorer
     {

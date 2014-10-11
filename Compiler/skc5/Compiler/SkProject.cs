@@ -2,6 +2,7 @@
 using ICSharpCode.NRefactory.TypeSystem;
 using System.Collections.Concurrent;
 using ICSharpCode.NRefactory.Extensions;
+using SharpKit.Compiler.Plugin;
 
 namespace SharpKit.Compiler
 {

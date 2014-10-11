@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Mirrored.SharpKit.JavaScript
+namespace SharpKit.Targets.JavaScript
 {
     #region JsTypeAttribute
     ///<summary>

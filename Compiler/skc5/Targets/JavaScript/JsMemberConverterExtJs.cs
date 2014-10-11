@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using ICSharpCode.NRefactory.TypeSystem;
-using SharpKit.JavaScript.Ast;
+using SharpKit.Targets.JavaScript.Ast;
 
-namespace SharpKit.Compiler.CsToJs
+namespace SharpKit.Targets.JavaScript
 {
     class JsMemberConverterExtJs : JsMemberConverterClr
     {

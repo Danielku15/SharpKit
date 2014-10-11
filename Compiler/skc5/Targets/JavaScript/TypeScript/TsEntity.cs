@@ -1,12 +1,11 @@
 ﻿using System.Collections.Generic;
 
-namespace SharpKit.TypeScript
+namespace SharpKit.Targets.JavaScript.TypeScript
 {
     abstract class TsEntity
     {
         public abstract void AcceptVisitor(ITsEntityVisitor visitor);
     }
-
 
     enum TsTypeKind
     {
@@ -34,7 +33,6 @@ namespace SharpKit.TypeScript
         {
             visitor.VisitType(this);
         }
-
     }
 
     class TsFunction : TsMember
@@ -103,7 +101,6 @@ namespace SharpKit.TypeScript
         {
             visitor.VisitProperty(this);
         }
-
     }
 
 
@@ -113,10 +110,7 @@ namespace SharpKit.TypeScript
         void VisitType(TsType ce);
         void VisitProperty(TsProperty pe);
         void VisitParameter(TsParameter prm);
-
     }
-
-
 
     static class Extensions
     {
@@ -125,5 +119,4 @@ namespace SharpKit.TypeScript
             return tr == null || tr.Name == "void";
         }
     }
-
 }

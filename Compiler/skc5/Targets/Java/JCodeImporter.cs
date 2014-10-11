@@ -1,19 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using ICSharpCode.NRefactory.CSharp;
-using System.Diagnostics;
-using ICSharpCode.NRefactory.TypeSystem;
 using ICSharpCode.NRefactory.CSharp.Resolver;
-using ICSharpCode.NRefactory.Semantics;
 using ICSharpCode.NRefactory.Extensions;
-using Mirrored.SharpKit.Java;
-using SharpKit.Compiler.Ast;
-using SharpKit.Java;
-using SharpKit.Java.Ast;
-using SharpKit.Targets;
+using ICSharpCode.NRefactory.Semantics;
+using ICSharpCode.NRefactory.TypeSystem;
+using SharpKit.Compiler;
+using SharpKit.Compiler.Plugin;
+using SharpKit.Targets.Ast;
+using SharpKit.Targets.Java.Ast;
 
-namespace SharpKit.Compiler.Java
+namespace SharpKit.Targets.Java
 {
     partial class JCodeImporter 
     {

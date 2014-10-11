@@ -5,7 +5,7 @@ using ICSharpCode.NRefactory.TypeSystem;
 using SharpKit.Compiler;
 using SharpKit.Utils;
 
-namespace SharpKit.Java.Ast
+namespace SharpKit.Targets.Java.Ast
 {
     static class J
     {

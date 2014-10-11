@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Mirrored.SharpKit.Java;
-using Mirrored.SharpKit.JavaScript;
-using ICSharpCode.NRefactory.TypeSystem;
 using ICSharpCode.NRefactory.Extensions;
+using ICSharpCode.NRefactory.TypeSystem;
+using SharpKit.Compiler;
+using SharpKit.Targets.JavaScript;
 
-namespace SharpKit.Compiler.JavaScript
+namespace SharpKit.Targets.Java
 {
     /// <summary>
     /// Finds assembly JsTypeAttribute(s) with TargetType, and adds them to the target type.
@@ -31,7 +31,7 @@ namespace SharpKit.Compiler.JavaScript
         {
             if (ce != null)
                 return ce.GetDefinition();
-            if (typeName.IsNullOrEmpty())
+            if (CssCompressorExtensions.IsNullOrEmpty(typeName))
                 return null;
             var type = Project.FindType(typeName);
             return type;

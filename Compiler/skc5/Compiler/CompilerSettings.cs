@@ -6,7 +6,7 @@ namespace SharpKit.Compiler
 {
     public class CompilerSettings
     {
-        static ToolArgsInfo<CompilerSettings> Info = new ToolArgsInfo<CompilerSettings> { Error = System.Console.WriteLine };
+        static readonly ToolArgsInfo<CompilerSettings> Info = new ToolArgsInfo<CompilerSettings> { Error = System.Console.WriteLine };
 
         private string _assemblyName;
 

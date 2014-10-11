@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using SharpKit.Utils;
 
-namespace SharpKit.JavaScript.Ast
+namespace SharpKit.Targets.JavaScript.Ast
 {
     static class Js
     {

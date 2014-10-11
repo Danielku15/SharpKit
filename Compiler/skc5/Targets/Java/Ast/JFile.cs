@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using SharpKit.Compiler;
+using SharpKit.Compiler.Plugin;
 using SharpKit.Targets.Ast;
 
-namespace SharpKit.Java.Ast
+namespace SharpKit.Targets.Java.Ast
 {
     class JFile : TargetFile
     {
@@ -40,7 +41,7 @@ namespace SharpKit.Java.Ast
         }
     }
 
-    partial class JExternalFileUnit : JUnit
+    class JExternalFileUnit : JUnit
     {
         public string Filename { get; set; }
     }

@@ -1,4 +1,5 @@
 ﻿using System;
+using SharpKit.Compiler.Plugin;
 using SharpKit.Targets.Ast;
 
 namespace SharpKit.Compiler

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.IO;
 using System.Runtime.Serialization;
+using SharpKit.Targets.JavaScript.SourceMapping;
 
 namespace SharpKit.Compiler.SourceMapping
 {

@@ -2,12 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using ICSharpCode.NRefactory.CSharp;
-using ICSharpCode.NRefactory.TypeSystem;
 using ICSharpCode.NRefactory.Extensions;
-using SharpKit.Java;
-using SharpKit.Java.Ast;
+using ICSharpCode.NRefactory.TypeSystem;
+using SharpKit.Compiler;
+using SharpKit.Targets.Java.Ast;
+using SharpKit.Targets.JavaScript;
+using SharpKit.Targets.Utils;
 
-namespace SharpKit.Compiler.Java
+namespace SharpKit.Targets.Java
 {
     partial class JCodeImporter : IAstVisitor<JNode>
     {
@@ -121,7 +123,7 @@ namespace SharpKit.Compiler.Java
         public JNode VisitNamedExpression(NamedExpression node)
         {
             var name = new JJsonMember { Name = node.Name };
-            if (name.Name.IsNullOrEmpty())
+            if (CssCompressorExtensions.IsNullOrEmpty(name.Name))
             {
                 throw new NotImplementedException();
                 //if (d.expression.e == cs_node.n_simple_name)
@@ -258,7 +260,7 @@ namespace SharpKit.Compiler.Java
             if (exp2 is JMemberExpression)
             {
                 var me = (JMemberExpression)exp2;
-                if (me.Name.IsNullOrEmpty() && me.PreviousMember == null)
+                if (CssCompressorExtensions.IsNullOrEmpty(me.Name) && me.PreviousMember == null)
                     return new JStatement();
             }
             return new JExpressionStatement { Expression = exp2 };
@@ -451,7 +453,7 @@ namespace SharpKit.Compiler.Java
         {
             var node2 = new JCatchClause();
 
-            if (node.VariableName.IsNullOrEmpty())
+            if (CssCompressorExtensions.IsNullOrEmpty(node.VariableName))
                 node.VariableName = "$$e" + (VariableExceptionCounter++); //Generate a psuedo-unique variable name
             node2.IdentifierName = node.VariableName;
             node2.Type = node.Type.Resolve().Type.JAccess();

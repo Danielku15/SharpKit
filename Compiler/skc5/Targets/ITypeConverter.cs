@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using ICSharpCode.NRefactory.TypeSystem;
-using SharpKit.Compiler;
+using SharpKit.Compiler.Plugin;
 using SharpKit.Targets.Ast;
 
 namespace SharpKit.Targets

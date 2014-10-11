@@ -1,14 +1,14 @@
 ﻿using System;
 
-namespace SharpKit.JavaScript.Ast
+namespace SharpKit.Targets.JavaScript.Ast
 {
     struct JsToken
     {
         public static JsToken Empty = new JsToken();
         public JsToken(string value, JsTokenType type)
         {
-            this.Type = type;
-            this.Value = value;
+            Type = type;
+            Value = value;
             Node = null;
         }
 

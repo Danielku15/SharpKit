@@ -1,18 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using ICSharpCode.NRefactory.CSharp;
 using ICSharpCode.NRefactory.CSharp.Resolver;
+using ICSharpCode.NRefactory.Extensions;
 using ICSharpCode.NRefactory.Semantics;
 using ICSharpCode.NRefactory.TypeSystem;
-using ICSharpCode.NRefactory.CSharp;
 using ICSharpCode.NRefactory.TypeSystem.Implementation;
-using ICSharpCode.NRefactory.Extensions;
-using Mirrored.SharpKit.Java;
-using SharpKit.Compiler.CsToJs;
-using SharpKit.Java;
-using SharpKit.Java.Ast;
+using SharpKit.Compiler;
+using SharpKit.Targets.JavaScript;
+using SharpKit.Targets.Java.Ast;
 
-namespace SharpKit.Compiler.Java
+namespace SharpKit.Targets.Java
 {
     partial class JCodeImporter : ICSharpResolveResultVisitor<JNode>
     {
@@ -672,7 +671,7 @@ namespace SharpKit.Compiler.Java
                 if (res.TargetResult != null && !me.IsStatic())
                 {
                     var instanceContext = VisitExpression(res.TargetResult);
-                    if (node3.Name.IsNullOrEmpty()) //support Name=""
+                    if (CssCompressorExtensions.IsNullOrEmpty(node3.Name)) //support Name=""
                         node2 = instanceContext;
                     else
                         node3.PreviousMember = instanceContext;
@@ -872,7 +871,7 @@ namespace SharpKit.Compiler.Java
             if (node2.Member is JMemberExpression)
             {
                 var x = (JMemberExpression)node2.Member;
-                if (x.Name.IsNullOrEmpty() && jMember.PreviousMember != null)
+                if (CssCompressorExtensions.IsNullOrEmpty(x.Name) && jMember.PreviousMember != null)
                     node2.Member = x.PreviousMember;
 
             }

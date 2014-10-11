@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Linq;
-using Mirrored.SharpKit.JavaScript;
 using System.IO;
 using ICSharpCode.NRefactory.TypeSystem;
 using ICSharpCode.NRefactory.Extensions;
+using SharpKit.Targets.JavaScript;
 
 namespace SharpKit.Compiler
 {
@@ -265,7 +265,7 @@ namespace SharpKit.Compiler
         {
             if (ce == null)
                 return null;
-            return ce.ParentAssembly.GetMetadatas<JsTypeAttribute>().Where(t => t.TargetType == null && t.TargetTypeName.IsNullOrEmpty()).FirstOrDefault();
+            return ce.ParentAssembly.GetMetadatas<JsTypeAttribute>().Where(t => t.TargetType == null && CssCompressorExtensions.IsNullOrEmpty(t.TargetTypeName)).FirstOrDefault();
         }
         private static JsEnumAttribute GetDefaultJsEnumAttribute(ITypeDefinition ce)
         {

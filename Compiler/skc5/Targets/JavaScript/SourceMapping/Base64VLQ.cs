@@ -1,8 +1,8 @@
-using System.Text;
-using System.Collections.Generic;
 using System;
+using System.Collections.Generic;
+using System.Text;
 
-namespace SharpKit.Compiler.SourceMapping
+namespace SharpKit.Targets.JavaScript.SourceMapping
 {
     class Base64VLQ
     {

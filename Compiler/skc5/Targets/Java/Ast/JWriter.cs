@@ -1,15 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
-using System.IO;
-using System.Diagnostics;
 using Corex.Text;
-using ICSharpCode.NRefactory.TypeSystem;
 using ICSharpCode.NRefactory.Extensions;
-using SharpKit.JavaScript.Ast;
+using ICSharpCode.NRefactory.TypeSystem;
+using SharpKit.Targets.JavaScript.Ast;
 
-namespace SharpKit.Java.Ast
+namespace SharpKit.Targets.Java.Ast
 {
     class JWriter : CodeWriter, IJNodeVisitor, IDisposable
     {

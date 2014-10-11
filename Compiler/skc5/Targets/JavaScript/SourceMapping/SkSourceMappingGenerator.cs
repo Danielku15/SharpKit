@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using SharpKit.JavaScript.Ast;
 using System.IO;
+using System.Linq;
 using ICSharpCode.NRefactory.CSharp;
-using SharpKit.Targets.JavaScript;
+using SharpKit.Compiler;
+using SharpKit.Compiler.Plugin;
+using SharpKit.Compiler.SourceMapping;
+using SharpKit.Targets.JavaScript.Ast;
+using SharpKit.Targets.Utils;
 
-namespace SharpKit.Compiler.SourceMapping
+namespace SharpKit.Targets.JavaScript.SourceMapping
 {
     class SkSourceMappingGenerator
     {
@@ -37,7 +40,7 @@ namespace SharpKit.Compiler.SourceMapping
             if (skFile.TargetFile == null)
                 return false;
             var file = skFile.TargetFile;
-            if (file.Units.IsNullOrEmpty())
+            if (CssCompressorExtensions.IsNullOrEmpty(file.Units))
                 return false;
             return true;
         }
@@ -64,7 +67,7 @@ namespace SharpKit.Compiler.SourceMapping
                         if (astNode == null || astNode.StartLocation.IsEmpty)
                             continue;
                         var region = astNode.GetRegion();
-                        if (region.FileName.IsNullOrEmpty())
+                        if (CssCompressorExtensions.IsNullOrEmpty(region.FileName))
                             continue;
                         string sourceName = null;
                         if (node.NodeType == JsNodeType.MemberExpression)

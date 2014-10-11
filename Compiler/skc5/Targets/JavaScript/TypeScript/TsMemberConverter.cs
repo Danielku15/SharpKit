@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using ICSharpCode.NRefactory.Extensions;
 using ICSharpCode.NRefactory.TypeSystem;
-using SharpKit.TypeScript;
+using SharpKit.Compiler;
 
-namespace SharpKit.Compiler.CsToJs
+namespace SharpKit.Targets.JavaScript.TypeScript
 {
     class TsMemberConverter
     {

@@ -2,15 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using ICSharpCode.NRefactory.TypeSystem;
-using Mirrored.SharpKit.JavaScript;
 using System.IO;
-using SharpKit.JavaScript.Ast;
+using SharpKit.Compiler;
+using SharpKit.Compiler.Plugin;
+using SharpKit.Targets.JavaScript.Ast;
 using ICSharpCode.NRefactory.Extensions;
-using SharpKit.Targets;
 using SharpKit.Targets.Ast;
-using SharpKit.TypeScript;
+using SharpKit.Targets.JavaScript.TypeScript;
 
-namespace SharpKit.Compiler.CsToJs
+namespace SharpKit.Targets.JavaScript
 {
     class JsTypeConverter : ITypeConverter
     {
@@ -126,9 +126,6 @@ namespace SharpKit.Compiler.CsToJs
                 writer.Flush();
                 writer.Close();
             }
-
-
-
         }
 
         private List<ITypeDefinition> GetAllTypesToExport()

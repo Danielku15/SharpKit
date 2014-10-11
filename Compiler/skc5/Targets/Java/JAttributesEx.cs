@@ -1,7 +1,7 @@
 ﻿using System;
 using ICSharpCode.NRefactory.TypeSystem;
 
-namespace Mirrored.SharpKit.Java
+namespace SharpKit.Targets.Java
 {
     partial class JTypeAttribute : Attribute, ISupportJSharpVersion
     {
@@ -28,13 +28,10 @@ namespace Mirrored.SharpKit.Java
     interface ISupportSourceAttribute
     {
         IAttribute SourceAttribute { get; set; }
-
     }
 
     interface ISupportJSharpVersion
     {
         string JSharpVersion { get; set; }
-
     }
-
 }

@@ -76,7 +76,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Compiler\CodeInjection.cs" />
+    <Compile Include="Targets\JavaScript\CodeInjection.cs" />
     <Compile Include="Compiler\Extensions.List.cs" />
     <Compile Include="Compiler\TargetAwareCompiler.cs" />
     <Compile Include="Targets\Ast\ITargetNode.cs" />
@@ -88,7 +88,7 @@
     <Compile Include="Targets\JavaScript\JavaScriptTarget.cs" />
     <Compile Include="Targets\JavaScript\JsCompilerExtensions.cs" />
     <Compile Include="Targets\JavaScript\SkJsFile.cs" />
-    <Compile Include="Targets\JavaScript\TsMemberConverter.cs" />
+    <Compile Include="Targets\JavaScript\TypeScript\TsMemberConverter.cs" />
     <Compile Include="Targets\Java\JavaTarget.cs" />
     <Compile Include="Targets\Java\JCodeImporter.cs" />
     <Compile Include="Targets\Java\JCodeImporter2.cs" />
@@ -98,10 +98,10 @@
     <Compile Include="Targets\Java\JYieldRefactorer.cs" />
     <Compile Include="Targets\Java\JMemberConverterNative.cs" />
     <Compile Include="Targets\JavaScript\JsExternalMetadata.cs" />
-    <Compile Include="Targets\JavaScript\Ast\JsModel.Visitor.generated.cs" />
+    <Compile Include="Targets\JavaScript\Ast\JsModel.Visitor.cs" />
     <Compile Include="Targets\JavaScript\JsCodeInliner.cs" />
     <Compile Include="Compiler\Extensions.Collections.cs" />
-    <Compile Include="Compiler\CommentsExporter.cs" />
+    <Compile Include="Targets\Utils\CommentsExporter.cs" />
     <Compile Include="Compiler\CompilerConfiguration.cs" />
     <Compile Include="Compiler\CompilerLogger.cs" />
     <Compile Include="Compiler\CompilerService.cs" />
@@ -109,18 +109,16 @@
     <Compile Include="Compiler\Console.cs" />
     <Compile Include="Targets\JavaScript\Extensions.cs" />
     <Compile Include="Targets\JavaScript\ResolveResultConverter_Invocation.cs" />
-    <Compile Include="Compiler\Cs2.cs" />
-    <Compile Include="Compiler\CsEntityExt.cs" />
-    <Compile Include="Compiler\ICsExternalMetadata.cs" />
+    <Compile Include="Compiler\Extensions.Entity.cs" />
+    <Compile Include="Targets\ICsExternalMetadata.cs" />
     <Compile Include="Targets\JavaScript\CssCompressor.cs" />
     <Compile Include="Targets\JavaScript\CssCompressorExtensions.cs" />
     <Compile Include="Compiler\Extensions.Metadata.cs" />
     <Compile Include="Targets\JavaScript\JsFileMerger.cs" />
-    <Compile Include="Compiler\FileUtils.cs" />
+    <Compile Include="Targets\Utils\FileUtils.cs" />
     <Compile Include="Targets\JavaScript\AstNodeConverter.cs" />
     <Compile Include="Targets\JavaScript\ResolveResultConverter.cs" />
     <Compile Include="Targets\JavaScript\ResolveResultConverter_Operator.cs" />
-    <Compile Include="Targets\JavaScript\JsMinifier.cs" />
     <Compile Include="Targets\JavaScript\JsTypeConverter.cs" />
     <Compile Include="Targets\JavaScript\JsMemberConverter.cs" />
     <Compile Include="Targets\JavaScript\JsMemberConverterClr.cs" />
@@ -128,7 +126,6 @@
     <Compile Include="Targets\JavaScript\JsMemberConverterGlobal.cs" />
     <Compile Include="Targets\JavaScript\JsMemberConverterNative.cs" />
     <Compile Include="Compiler\Manifest.cs" />
-    <Compile Include="Compiler\NotifyNavigator.cs" />
     <Compile Include="Compiler\Plugin\ICompiler.cs" />
     <Compile Include="Compiler\Plugin\ICompilerPlugin.cs" />
     <Compile Include="Compiler\Plugin\ICSharpModel.cs" />
@@ -136,7 +133,6 @@
     <Compile Include="Compiler\WindowsService.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Compiler\SharpKitVersionInfo.cs" />
     <Compile Include="Compiler\Sk.cs" />
     <Compile Include="Targets\JavaScript\SkJs.cs" />
     <Compile Include="Compiler\SkFile.cs" />
@@ -155,11 +151,11 @@
     <Compile Include="Targets\JavaScript\Ast\Js.cs" />
     <Compile Include="Targets\JavaScript\Ast\JsFile.cs" />
     <Compile Include="Targets\JavaScript\Ast\JsFormatter_Default.cs" />
-    <Compile Include="Targets\JavaScript\Ast\JsModel.cs" />
-    <Compile Include="Targets\JavaScript\Ast\JsModel.generated.cs" />
+    <Compile Include="Targets\JavaScript\Ast\JsModel.Properties.cs" />
+    <Compile Include="Targets\JavaScript\Ast\JsModel.Declaration.cs" />
     <Compile Include="Targets\JavaScript\Ast\JsModel.Linq.cs" />
-    <Compile Include="Targets\JavaScript\Ast\JsModel.Clone.generated.cs" />
-    <Compile Include="Targets\JavaScript\Ast\JsModelExtensions.cs" />
+    <Compile Include="Targets\JavaScript\Ast\JsModel.Clone.cs" />
+    <Compile Include="Targets\JavaScript\Ast\JsModel.Extensions.cs" />
     <Compile Include="Targets\JavaScript\Ast\JsToken.cs" />
     <Compile Include="Targets\JavaScript\Ast\JsWriter.cs" />
     <Compile Include="Targets\JavaScript\JsAttributes.cs" />
@@ -178,9 +174,9 @@
     <Compile Include="Targets\Java\JAttributesEx.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Targets\Java\SkJFile.cs" />
-    <Compile Include="Targets\TypeScript\TsEntity.cs" />
-    <Compile Include="Targets\TypeScript\TsWriter.cs" />
-    <Compile Include="Targets\TypeScript\VisitableWriter.cs" />
+    <Compile Include="Targets\JavaScript\TypeScript\TsEntity.cs" />
+    <Compile Include="Targets\JavaScript\TypeScript\TsWriter.cs" />
+    <Compile Include="Targets\JavaScript\TypeScript\VisitableWriter.cs" />
     <Compile Include="Utils\Analytics\Mp2.cs" />
     <Compile Include="Utils\Misc\CSharpHelper.cs" />
     <Compile Include="Utils\Misc\EnumerableHelper.cs" />
@@ -196,7 +192,6 @@
     <None Include="App.config">
       <SubType>Designer</SubType>
     </None>
-    <Compile Include="Targets\JavaScript\Ast\JsModel.Clone.cs" />
     <None Include="SharpKit.pfx" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -1,4 +1,4 @@
-﻿namespace SharpKit.Compiler.Ast
+﻿namespace SharpKit.Targets.Ast
 {
     public interface ITargetNode
     {

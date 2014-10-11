@@ -12,13 +12,13 @@ using Corex.IO.Tools;
 using ICSharpCode.NRefactory.CSharp;
 using ICSharpCode.NRefactory.Semantics;
 using ICSharpCode.NRefactory.TypeSystem;
-using SharpKit.Compiler.Ast;
-using SharpKit.Compiler.CsToJs;
-using SharpKit.Compiler.JavaScript;
+using SharpKit.Compiler.Plugin;
 using SharpKit.Targets;
+using SharpKit.Targets.Ast;
 using SharpKit.Targets.Java;
 using SharpKit.Targets.JavaScript;
 using SharpKit.Utils.Http;
+using ICustomAttributeProvider = SharpKit.Compiler.Plugin.ICustomAttributeProvider;
 
 namespace SharpKit.Compiler
 {
@@ -100,7 +100,7 @@ namespace SharpKit.Compiler
                 if (Settings.CheckForNewVersion)
                 {
                     Time(CheckForNewVersion);
-                    if (Settings.Files.IsNullOrEmpty())
+                    if (CssCompressorExtensions.IsNullOrEmpty(Settings.Files))
                         return 0;
                 }
 
@@ -541,7 +541,7 @@ namespace SharpKit.Compiler
 
         private void LoadPlugins()
         {
-            if (Settings.Plugins.IsNullOrEmpty())
+            if (CssCompressorExtensions.IsNullOrEmpty(Settings.Plugins))
                 return;
             foreach (var plugin in Settings.Plugins)
             {

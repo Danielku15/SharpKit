@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace SharpKit.Java.Ast
+namespace SharpKit.Targets.Java.Ast
 {
     static class Extensions
     {

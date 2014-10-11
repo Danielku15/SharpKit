@@ -2,8 +2,19 @@
 using System.Collections.Generic;
 using ICSharpCode.NRefactory.TypeSystem;
 
-namespace SharpKit.Compiler
+namespace SharpKit.Compiler.Plugin
 {
+    public interface ICustomAttributeProvider
+    {
+        void AddCustomAttribute(IEntity me, Attribute att);
+        T GetCustomAttribute<T>(IEntity me) where T : Attribute;
+        IEnumerable<T> GetCustomAttributes<T>(IEntity me) where T : Attribute;
+
+        void AddCustomAttribute(IAssembly me, Attribute att);
+        T GetCustomAttribute<T>(IAssembly me) where T : Attribute;
+        IEnumerable<T> GetCustomAttributes<T>(IAssembly me) where T : Attribute;
+    }
+    
     class CustomAttributeProvider : ICustomAttributeProvider
     {
         #region ICSharpModelProvider Members
@@ -39,15 +50,5 @@ namespace SharpKit.Compiler
         }
 
         #endregion
-    }
-    public interface ICustomAttributeProvider
-    {
-        void AddCustomAttribute(IEntity me, Attribute att);
-        T GetCustomAttribute<T>(IEntity me) where T : Attribute;
-        IEnumerable<T> GetCustomAttributes<T>(IEntity me) where T : Attribute;
-
-        void AddCustomAttribute(IAssembly me, Attribute att);
-        T GetCustomAttribute<T>(IAssembly me) where T : Attribute;
-        IEnumerable<T> GetCustomAttributes<T>(IAssembly me) where T : Attribute;
     }
 }
