@@ -14,28 +14,10 @@ namespace SharpKit.Targets.JavaScript.Ast
         {
             node.StartLocation = StartLocation;
             node.EndLocation = EndLocation;
-            Annotations.ForEach(t => node.AddAnnotation(t));
+            Annotations.ForEach(node.AddAnnotation);
         }
     }
 
-    partial class JsStatement
-    {
-        public override JsNode New()
-        {
-            return new JsStatement();
-        }
-        public override void Clone(JsNode node)
-        {
-            base.Clone(node);
-            var node2 = (JsStatement)node;
-            if (Comments != null)
-            {
-                if (node2.Comments == null)
-                    node2.Comments = new List<String>();
-                node2.Comments.AddRange(Comments);
-            }
-        }
-    }
     partial class JsStatement
     {
         public override JsNode New()

@@ -7,7 +7,7 @@ namespace SharpKit.Targets.JavaScript
     {
         public static JsExportAttribute GetJsExportAttribute(this ICompiler compiler)
         {
-            if (compiler.TargetData["JsExportAttribute"] == null)
+            if (!compiler.TargetData.ContainsKey("JsExportAttribute"))
             {
                 compiler.TargetData["JsExportAttribute"] = Sk.GetJsExportAttribute(compiler.Project.Compilation);
             }

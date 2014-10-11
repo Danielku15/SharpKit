@@ -63,16 +63,5 @@ namespace SharpKit.Targets.JavaScript.Ast
     public partial class JsExternalFileUnit : JsUnit
     {
         public string Filename { get; set; }
-
-        public override JsNode New()
-        {
-            return new JsExternalFileUnit();
-        }
-        public override void Clone(JsNode node)
-        {
-            base.Clone(node);
-            var node2 = (JsExternalFileUnit)node;
-            node2.Filename = Filename;
-        }
     }
 }
