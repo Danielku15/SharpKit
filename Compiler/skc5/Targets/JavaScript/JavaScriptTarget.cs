@@ -9,6 +9,7 @@ using SharpKit.Targets.JavaScript;
 using Mono.Cecil;
 using SharpKit.Compiler;
 using SharpKit.Targets.JavaScript.Ast;
+using Console = System.Console;
 
 namespace SharpKit.Targets.JavaScript
 {
@@ -160,6 +161,7 @@ namespace SharpKit.Targets.JavaScript
 
         public override void MergeTargetFiles()
         {
+
             _jsFileMerger = new JsFileMerger
             {
                 Project = Compiler.Project,
@@ -167,6 +169,7 @@ namespace SharpKit.Targets.JavaScript
                 Log = Compiler.Log,
                 Compiler = Compiler
             };
+            Compiler.Log.WriteLine("Merging {0} files", _jsFileMerger.Files.Count);
 
             Time(GenerateCodeInjectionFile);
 
@@ -375,6 +378,7 @@ namespace SharpKit.Targets.JavaScript
                 format = att.JsCodeFormat;
             }
 
+            Compiler.Log.WriteLine("Saving {0} files", Compiler.SkFiles.Count);
             foreach (var file in Compiler.SkFiles)
             {
                 file.Format = format;

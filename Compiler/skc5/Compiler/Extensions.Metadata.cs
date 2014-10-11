@@ -116,7 +116,12 @@ namespace SharpKit.Compiler
 
         public static Type GetMirroredClrType(this IType ce)
         {
-            var type = Type.GetType(Sk.MirrorTypePrefix + ce.ReflectionName, false);
+            var name = ce.ReflectionName;
+            if (name.StartsWith(Sk.MirrorTypePrefixReplace))
+            {
+                name = Sk.MirrorTypePrefix + name.Substring(Sk.MirrorTypePrefixReplace.Length);
+            }
+            var type = Type.GetType(name, false);
             if (type == null)
                 type = Type.GetType(ce.ReflectionName, true);
             return type;

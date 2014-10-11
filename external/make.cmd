@@ -3,7 +3,7 @@
 
 IF not "%1" == "release" (
 
-%msbuild% /p:Configuration=net_4_0_Release cecil/Mono.Cecil.csproj
+%msbuild% cecil/Mono.Cecil.csproj
 %msbuild% NRefactory/NRefactory.sln
 %msbuild% corex/corex.sln
 %msbuild% AjaxMin/AjaxMinDll/AjaxMinDll.sln

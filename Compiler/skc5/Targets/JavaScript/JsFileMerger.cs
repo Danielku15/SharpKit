@@ -73,6 +73,7 @@ namespace SharpKit.Targets.JavaScript
         {
             foreach (var source2 in sources)
             {
+                Compiler.Log.WriteLine("    Adding {0} units to merged file", source2.TargetFile.Units.Count);
                 target.TargetFile.Units.AddRange(source2.TargetFile.Units);
             }
         }

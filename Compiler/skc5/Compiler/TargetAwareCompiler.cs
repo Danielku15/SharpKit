@@ -63,9 +63,8 @@ namespace SharpKit.Compiler
             if (Log == null)
             {
                 Log = new CompilerLogger();
-                Log.Init();
             }
-
+            Log.Init();
         }
 
         public int Run()

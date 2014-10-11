@@ -27,6 +27,10 @@ namespace SharpKit.Compiler
             if (CompilerConfiguration.Current.EnableLogging)
             {
                 _loggingFilename = Process.GetCurrentProcess().MainModule.FileName + ".log";
+                if (_loggingFilename == null)
+                {
+                    _loggingFilename = "skc5.log";
+                }
                 File.Delete(_loggingFilename);
             }
         }

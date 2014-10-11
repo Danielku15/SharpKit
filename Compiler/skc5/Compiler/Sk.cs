@@ -3,16 +3,20 @@ using System.Linq;
 using System.IO;
 using ICSharpCode.NRefactory.TypeSystem;
 using ICSharpCode.NRefactory.Extensions;
+using Mono.CSharp;
 using SharpKit.Targets.JavaScript;
+using ITypeDefinition = ICSharpCode.NRefactory.TypeSystem.ITypeDefinition;
 
 namespace SharpKit.Compiler
 {
+    // TODO move this to JavaScript Target (JsMeta)
     static class Sk
     {
         public static bool NewInterfaceImplementation = false; //New interface implementation
 
         public static string DirectorySeparator = Path.DirectorySeparatorChar.ToString();
-        public static string MirrorTypePrefix = "Mirrored.";
+        public static string MirrorTypePrefix = "SharpKit.Targets.";
+        public static string MirrorTypePrefixReplace = "SharpKit.";
 
         public static string GetExportPath(ITypeDefinition ce)
         {
@@ -62,7 +66,7 @@ namespace SharpKit.Compiler
 
 
         #region JsMethodAttribute
-        public static JsMethodAttribute GetJsMethodAttribute(IMethod me)
+        public static JsMethodAttribute GetJsMethodAttribute(this IMethod me)
         {
             if (me == null)
                 return null;
@@ -129,7 +133,7 @@ namespace SharpKit.Compiler
         #endregion
 
         #region JsPropertyAttribute
-        public static JsPropertyAttribute GetJsPropertyAttribute(IProperty pe)
+        public static JsPropertyAttribute GetJsPropertyAttribute(this IProperty pe)
         {
             return pe.GetMetadata<JsPropertyAttribute>();
         }
@@ -150,9 +154,15 @@ namespace SharpKit.Compiler
             }
             return false;
         }
+
         public static bool UseNativeIndexer(IProperty pe)
         {
-            return pe.MD<JsPropertyAttribute, bool>(t => t.NativeIndexer);
+            var att = pe.GetJsPropertyAttribute();
+            if (att != null)
+            {
+                return att.NativeIndexer;
+            }
+            return false;
         }
 
         public static bool IsNativeProperty(IProperty pe)
@@ -257,7 +267,15 @@ namespace SharpKit.Compiler
                 return null;
             var att = ce.GetMetadata<JsTypeAttribute>();
             if (att == null && ce.ParentAssembly != null)
-                att = GetDefaultJsTypeAttribute(ce);
+            {
+                att = ce.ParentAssembly.GetMetadatas<JsTypeAttribute>()
+                        .FirstOrDefault(t => t.TargetType == ce);
+
+                if (att == null)
+                {
+                    att = GetDefaultJsTypeAttribute(ce);
+                }
+            }
             return att;
         }
 
@@ -265,7 +283,7 @@ namespace SharpKit.Compiler
         {
             if (ce == null)
                 return null;
-            return ce.ParentAssembly.GetMetadatas<JsTypeAttribute>().Where(t => t.TargetType == null && CssCompressorExtensions.IsNullOrEmpty(t.TargetTypeName)).FirstOrDefault();
+            return ce.ParentAssembly.GetMetadatas<JsTypeAttribute>().FirstOrDefault(t => t.TargetType == null && CssCompressorExtensions.IsNullOrEmpty(t.TargetTypeName));
         }
         private static JsEnumAttribute GetDefaultJsEnumAttribute(ITypeDefinition ce)
         {
@@ -371,6 +389,24 @@ namespace SharpKit.Compiler
             if (att != null && att._Global != null)
                 return att._Global.Value;
             return IsGlobalType(me.GetDeclaringTypeDefinition());
+        }
+
+        #endregion
+
+        #region JsField
+
+        public static JsFieldAttribute GetJsFieldAttribute(this IField pe)
+        {
+            return pe.GetMetadata<JsFieldAttribute>();
+        }
+
+        #endregion
+
+        #region JsEvent
+
+        public static JsEventAttribute GetJsEventAttribute(this IEvent pe)
+        {
+            return pe.GetMetadata<JsEventAttribute>();
         }
 
         #endregion
@@ -500,82 +536,89 @@ namespace SharpKit.Compiler
 
         #region Utils
 
-        static R MD<T, R>(this IEntity me, Func<T, R> selector) where T : Attribute
-        {
-            var att = me.GetMetadata<T>(true);
-            if (att != null)
-                return selector(att);
-            return default(R);
-        }
-        static R MD_JsMethod<R>(this IMethod me, Func<JsMethodAttribute, R> func)
-        {
-            return me.MD(func);
-        }
-        static R MD_JsProperty<R>(this IProperty me, Func<JsPropertyAttribute, R> func)
-        {
-            return me.MD(func);
-        }
-        static R MD_JsField<R>(this IField me, Func<JsFieldAttribute, R> func)
-        {
-            return me.MD(func);
-        }
-        static R MD_JsEvent<R>(this IEvent me, Func<JsEventAttribute, R> func)
-        {
-            return me.MD(func);
-        }
         static R MD_JsType<R>(this ITypeDefinition ce, Func<JsTypeAttribute, R> func2)
         {
-            var att = ce.GetMetadata<JsTypeAttribute>();
+            var att = ce.GetJsTypeAttribute();
             if (att != null)
             {
-                var x = func2(att);
-                if (((object)x) != null)
-                    return x;
-            }
-            att = GetDefaultJsTypeAttribute(ce);
-            if (att != null)
                 return func2(att);
+            }
             return default(R);
         }
+
         static R MD_JsMethodOrJsType<R>(this IMethod me, Func<JsMethodAttribute, R> func, Func<JsTypeAttribute, R> func2)
         {
-            var x = me.MD_JsMethod(func);
-            if (((object)x) != null)
-                return x;
+            var x = me.GetJsMethodAttribute();
+            if (x != null)
+            {
+                return func(x);
+            }
             var ce = me.GetDeclaringTypeDefinition();
             if (ce != null)
-                x = ce.MD_JsType(func2);
-            return x;
+            {
+                var y = ce.GetJsTypeAttribute();
+                if (y != null)
+                {
+                    return func2(y);
+                }
+            }
+            return default(R);
         }
         static R MD_JsPropertyOrJsType<R>(this IProperty me, Func<JsPropertyAttribute, R> func, Func<JsTypeAttribute, R> func2)
         {
-            var x = me.MD_JsProperty(func);
-            if (((object)x) != null)
-                return x;
+            var x = me.GetJsPropertyAttribute();
+            if (x != null)
+            {
+                return func(x);
+            }
             var ce = me.GetDeclaringTypeDefinition();
             if (ce != null)
-                x = ce.MD_JsType(func2);
-            return x;
+            {
+                var y = ce.GetJsTypeAttribute();
+                if (y != null)
+                {
+                    return func2(y);
+                }
+            }
+            return default(R);
         }
+
         static R MD_JsFieldOrJsType<R>(this IField me, Func<JsFieldAttribute, R> func, Func<JsTypeAttribute, R> func2)
         {
-            var x = me.MD_JsField(func);
-            if (((object)x) != null)
-                return x;
+            var x = me.GetJsFieldAttribute();
+            if (x != null)
+            {
+                return func(x);
+            }
             var ce = me.GetDeclaringTypeDefinition();
             if (ce != null)
-                x = ce.MD_JsType(func2);
-            return x;
+            {
+                var y = ce.GetJsTypeAttribute();
+                if (y != null)
+                {
+                    return func2(y);
+                }
+            }
+            return default(R);
         }
+
         static R MD_JsEventOrJsType<R>(this IEvent me, Func<JsEventAttribute, R> func, Func<JsTypeAttribute, R> func2)
         {
-            var x = me.MD_JsEvent(func);
-            if (((object)x) != null)
-                return x;
+            var x = me.GetJsEventAttribute();
+            if (x != null)
+            {
+                return func(x);
+            }
             var ce = me.GetDeclaringTypeDefinition();
             if (ce != null)
-                x = ce.MD_JsType(func2);
-            return x;
+            {
+                var y = ce.GetJsTypeAttribute();
+                if (y != null)
+                {
+                    return func2(y);
+                }
+            }
+            return default(R);
         }
 
         static R MD_JsEnum<R>(this ITypeDefinition ce, Func<JsEnumAttribute, R> func2)
@@ -583,9 +626,7 @@ namespace SharpKit.Compiler
             var att = ce.GetMetadata<JsEnumAttribute>();
             if (att != null)
             {
-                var x = func2(att);
-                if (((object)x) != null)
-                    return x;
+                return func2(att);
             }
             att = GetDefaultJsEnumAttribute(ce);
             if (att != null)
