@@ -487,40 +487,45 @@ namespace SharpKit.Targets.JavaScript
             }
             else
             {
-                var invokeExp = (JsInvocationExpression)VisitInvocationResolveResult(res);
-                var newExp = new JsNewObjectExpression { Invocation = invokeExp };
-                JsExpression finalExp;
-                if (meAtt != null && meAtt.OmitNewOperator)
-                    finalExp = invokeExp;
-                else
-                    finalExp = newExp;
-
-                if (meAtt != null && meAtt.JsonInitializers)
+                var ctorExpression = VisitInvocationResolveResult(res);
+                
+                if (ctorExpression.NodeType == JsNodeType.InvocationExpression)
                 {
-                    var json = Importer.InitializersToJson(res.InitializerStatements, res.Type);
-                    invokeExp.Arguments.Add(json);
-                }
-                else if (res.InitializerStatements.IsNotNullOrEmpty())
-                {
-                    var func = Js.Function();
+                    var invokeExp = (JsInvocationExpression)VisitInvocationResolveResult(res);
+                    var newExp = new JsNewObjectExpression { Invocation = invokeExp };
+                    JsExpression finalExp;
+                    if (meAtt != null && meAtt.OmitNewOperator)
+                        finalExp = invokeExp;
+                    else
+                        finalExp = newExp;
 
-                    var inits2 = res.InitializerStatements.Select(t => Visit(t)).ToList();
-                    var init1 = res.InitializerStatements[0];
-
-                    var target = AstNodeConverter.FindInitializedObjectResolveResult(res);// ((init1 as OperatorResolveResult).Operands[0] as MemberResolveResult).TargetResult as InitializedObjectResolveResult;
-                    var varName = Importer.Initializers[target];
-                    func.Add(Js.Var(varName, finalExp).Statement());
-
-                    foreach (var init in inits2)
+                    if (meAtt != null && meAtt.JsonInitializers)
                     {
-                        var exp = ((JsExpression)init);
-                        func.Add(exp.Statement());
+                        var json = Importer.InitializersToJson(res.InitializerStatements, res.Type);
+                        invokeExp.Arguments.Add(json);
                     }
-                    func.Add(Js.Return(Js.Member(varName)));
-                    finalExp = Importer.WrapFunctionAndInvoke(res, func);
-                }
+                    else if (res.InitializerStatements.IsNotNullOrEmpty())
+                    {
+                        var func = Js.Function();
 
-                return finalExp;
+                        var inits2 = res.InitializerStatements.Select(t => Visit(t)).ToList();
+                        var init1 = res.InitializerStatements[0];
+
+                        var target = AstNodeConverter.FindInitializedObjectResolveResult(res);// ((init1 as OperatorResolveResult).Operands[0] as MemberResolveResult).TargetResult as InitializedObjectResolveResult;
+                        var varName = Importer.Initializers[target];
+                        func.Add(Js.Var(varName, finalExp).Statement());
+
+                        foreach (var init in inits2)
+                        {
+                            var exp = ((JsExpression)init);
+                            func.Add(exp.Statement());
+                        }
+                        func.Add(Js.Return(Js.Member(varName)));
+                        finalExp = Importer.WrapFunctionAndInvoke(res, func);
+                    }
+                    return finalExp;
+                }
+                return ctorExpression;
             }
 
         }
