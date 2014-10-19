@@ -1,0 +1,110 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{24286340-1C17-4B81-851D-27138C1011F4}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>SharpKit.Compiler</RootNamespace>
+    <AssemblyName>SharpKit.Compiler.Common</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="corex">
+      <HintPath>..\..\external\corex\src\corex\bin\corex.dll</HintPath>
+    </Reference>
+    <Reference Include="ICSharpCode.NRefactory">
+      <HintPath>..\..\external\NRefactory\bin\net_4_5_Release\ICSharpCode.NRefactory.dll</HintPath>
+    </Reference>
+    <Reference Include="ICSharpCode.NRefactory.CSharp">
+      <HintPath>..\..\external\NRefactory\bin\net_4_5_Release\ICSharpCode.NRefactory.CSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.ServiceProcess" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="ClrResolveVisitor.cs" />
+    <Compile Include="CompilerConfiguration.cs" />
+    <Compile Include="CompilerLogger.cs" />
+    <Compile Include="CompilerService.cs" />
+    <Compile Include="CompilerSettings.cs" />
+    <Compile Include="Console.cs" />
+    <Compile Include="Extensions.Collections.cs" />
+    <Compile Include="Extensions.Entity.cs" />
+    <Compile Include="Extensions.List.cs" />
+    <Compile Include="Extensions.Metadata.cs" />
+    <Compile Include="Manifest.cs" />
+    <Compile Include="Plugin\ICompiler.cs" />
+    <Compile Include="Plugin\ICompilerPlugin.cs" />
+    <Compile Include="Plugin\ICSharpModel.cs" />
+    <Compile Include="Sk.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SkFile.cs" />
+    <Compile Include="SkProject.cs" />
+    <Compile Include="TargetBasedCompiler.cs" />
+    <Compile Include="Targets\Ast\ITargetNode.cs" />
+    <Compile Include="Targets\Ast\TargetFile.cs" />
+    <Compile Include="Targets\Attributes.cs" />
+    <Compile Include="Targets\ICompilerTarget.cs" />
+    <Compile Include="Targets\ICsExternalMetadata.cs" />
+    <Compile Include="Targets\IMemberConverter.cs" />
+    <Compile Include="Targets\ITypeConverter.cs" />
+    <Compile Include="Targets\Utils\CommentsExporter.cs" />
+    <Compile Include="Targets\Utils\FileUtils.cs" />
+    <Compile Include="Utils\CompilerServiceClient.cs" />
+    <Compile Include="Utils\Extensions.cs" />
+    <Compile Include="WindowsService.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Utils\Mp2.cs" />
+    <Compile Include="Utils\CssCompressor.cs" />
+    <Compile Include="Utils\CssCompressorExtensions.cs" />
+    <Compile Include="Utils\CSharpHelper.cs" />
+    <Compile Include="Utils\EnumerableHelper.cs" />
+    <Compile Include="Utils\JsonServer.cs" />
+    <Compile Include="Utils\StopwatchHelper.cs" />
+    <Compile Include="Utils\XExtensions.cs" />
+    <Compile Include="Utils\XmlHelper.cs" />
+    <Compile Include="Utils\XSerializer.cs" />
+    <Compile Include="Utils\PathMerger.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
