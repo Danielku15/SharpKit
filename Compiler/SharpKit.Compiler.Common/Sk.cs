@@ -2,7 +2,7 @@
 {
     public static class Sk
     {
-        public static string MirrorTypePrefix = "SharpKit.Targets.";
-        public static string MirrorTypePrefixReplace = "SharpKit.";
+        public static string MirrorTypePrefixExternal = "SharpKit.Compiler.";
+        public static string MirrorTypePrefixInternal = "SharpKit.";
     }
 }

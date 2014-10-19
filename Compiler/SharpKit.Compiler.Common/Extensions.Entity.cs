@@ -170,8 +170,8 @@ namespace SharpKit.Compiler
                 if (_attributeTypeName == null)
                     _attributeTypeName = IAttribute.AttributeType.FullName;
                 var name2 = typeof(T).FullName;
-                if (name2.StartsWith(Sk.MirrorTypePrefix, StringComparison.InvariantCultureIgnoreCase))
-                    name2 = Sk.MirrorTypePrefixReplace + name2.Substring(Sk.MirrorTypePrefix.Length);
+                if (name2.StartsWith(Sk.MirrorTypePrefixExternal, StringComparison.InvariantCultureIgnoreCase))
+                    name2 = Sk.MirrorTypePrefixInternal + name2.Substring(Sk.MirrorTypePrefixExternal.Length);
                 if (_attributeTypeName == name2)
                 {
                     return true;

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ICSharpCode.NRefactory.Extensions;
 using ICSharpCode.NRefactory.TypeSystem;
+using SharpKit.Compiler.Java;
 
 namespace SharpKit.Compiler.Targets.Java
 {

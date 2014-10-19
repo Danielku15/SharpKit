@@ -9,6 +9,7 @@ using ICSharpCode.NRefactory.Extensions;
 using ICSharpCode.NRefactory.Semantics;
 using ICSharpCode.NRefactory.TypeSystem;
 using ICSharpCode.NRefactory.TypeSystem.Implementation;
+using SharpKit.Compiler.Java;
 using SharpKit.Compiler.Plugin;
 using SharpKit.Compiler.Targets.Ast;
 using SharpKit.Compiler.Targets.Java.Ast;

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SharpKit.Compiler.Targets.Java
+namespace SharpKit.Compiler.Java
 {
     #region JsTypeAttribute
     ///<summary>

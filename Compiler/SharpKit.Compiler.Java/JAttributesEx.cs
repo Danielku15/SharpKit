@@ -1,7 +1,7 @@
 ﻿using System;
 using ICSharpCode.NRefactory.TypeSystem;
 
-namespace SharpKit.Compiler.Targets.Java
+namespace SharpKit.Compiler.Java
 {
     partial class JTypeAttribute : Attribute, ISupportJSharpVersion
     {
