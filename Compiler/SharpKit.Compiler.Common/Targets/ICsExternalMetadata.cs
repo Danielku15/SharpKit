@@ -13,6 +13,8 @@ namespace SharpKit.Compiler.Targets
     public interface ICsExternalMetadata
     {
         IEnumerable<ITypeDefinition> TypesWithExternalAttributes { get; }
+        SkProject Project { get; set; }
+        CompilerLogger Log { get; set; }
 
         void Process();
     }

@@ -422,6 +422,9 @@ namespace SharpKit.Compiler
             OnBeforeApplyExternalMetadata();
 
             ExternalMetadata = Target.BuildExternalMetadata();
+            ExternalMetadata.Project = Project;
+            ExternalMetadata.Log = Log;
+            ExternalMetadata.Process();
 
             OnAfterApplyExternalMetadata();
         }

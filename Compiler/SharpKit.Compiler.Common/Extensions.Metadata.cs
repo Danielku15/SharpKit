@@ -1,6 +1,8 @@
 ﻿using System;
+using System.CodeDom;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using ICSharpCode.NRefactory.TypeSystem;
 using ICSharpCode.NRefactory.Semantics;
 using System.Collections.Concurrent;
@@ -114,17 +116,45 @@ namespace SharpKit.Compiler
             return value;
         }
 
+
+        private static readonly Dictionary<string, Type> MirroredClrTypeLookup = new Dictionary<string, Type>(); 
         public static Type GetMirroredClrType(this IType ce)
         {
-            var name = ce.ReflectionName;
+            var originalName = ce.ReflectionName;
+            var name = originalName;
+
+            if (MirroredClrTypeLookup.ContainsKey(name))
+            {
+                return MirroredClrTypeLookup[name];
+            }
+
             if (name.StartsWith(Sk.MirrorTypePrefixInternal))
             {
                 name = Sk.MirrorTypePrefixExternal + name.Substring(Sk.MirrorTypePrefixInternal.Length);
             }
-            var type = Type.GetType(name, false);
+            var type = FindTypeByName(name, false);
             if (type == null)
                 type = Type.GetType(ce.ReflectionName, true);
+            MirroredClrTypeLookup[originalName] = type;
             return type;
+        }
+
+        private static Type FindTypeByName(string name, bool throwException)
+        {
+            Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
+            foreach (var assembly in assemblies)
+            {
+                Type type = assembly.GetType(name, false);
+                if (type != null)
+                {
+                    return type;
+                }
+            }
+            if (throwException)
+            {
+                throw new TypeLoadException(string.Format("Could not find type {0}", name));
+            }
+            return null;
         }
 
         public static T ConvertToCustomAttribute<T>(this IAttribute att, SkProject project)
