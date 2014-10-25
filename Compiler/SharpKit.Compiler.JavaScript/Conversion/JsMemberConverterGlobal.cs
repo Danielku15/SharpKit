@@ -10,16 +10,16 @@ namespace SharpKit.Compiler.JavaScript.Conversion
     {
         public override JsNode ExportConstructor(IMethod ctor)
         {
-            //var func = (JsFunction)base.ExportConstructor(ctor);
-            //if (ctor.IsStatic)
-            //{
-            //    return Js.Member("$StaticConstructor").Invoke(func).Statement();
-            //}
-            //return func;
             var func = (JsFunction)base.ExportConstructor(ctor);
             if (ctor.IsStatic)
-                return new JsUnit { Statements = func.Block.Statements };
+            {
+                return Js.Member("$StaticConstructor").Invoke(func).Statement();
+            }
             return func;
+            //var func = (JsFunction)base.ExportConstructor(ctor);
+            //if (ctor.IsStatic)
+            //    return new JsUnit { Statements = func.Block.Statements };
+            //return func;
         }
 
         public override JsNode _VisitField(IField fld)
