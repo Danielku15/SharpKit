@@ -706,7 +706,10 @@ namespace SharpKit.Compiler.JavaScript.Conversion
 
         public List<IMember> GetMembersToExport(ITypeDefinition ce)
         {
-            var members = ce.Members.Where(t => ShouldExportMember(t)).ToList();
+            var members = ce.Members.Where(ShouldExportMember).OrderBy(m => 
+                !m.IsStatic && m.SymbolKind == SymbolKind.Constructor ? 0 :
+                    (!m.IsStatic ? 1 : 0)
+                ).ToList();
             var fields = GeneratePropertyFields(ce, true).Concat(GeneratePropertyFields(ce, false));
             members = members.Concat(fields).ToList();
 

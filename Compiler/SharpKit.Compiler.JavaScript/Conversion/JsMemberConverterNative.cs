@@ -18,7 +18,45 @@ namespace SharpKit.Compiler.JavaScript.Conversion
             ExportTypeNamespace(unit, ce);
             var members = GetMembersToExport(ce);
 
-            VisitToUnit(unit, members);
+            var prototypeValue = Js.Json();
+            prototypeValue.NamesValues = new List<JsJsonNameValue>();
+            var nonStatics = new List<JsNode>();
+            var statics = new List<JsNode>();
+
+            foreach (var member in members)
+            {
+                if (member.IsStatic)
+                {
+                    statics.Add(Visit(member));
+                }
+                else
+                {
+                    var node = Visit(member);
+                    IEnumerable<JsNode> toAdd = node.NodeType == JsNodeType.NodeList
+                        ? ((JsNodeList)node).Nodes.AsEnumerable()
+                        : new[] { node };
+                    foreach (var jsNode in toAdd)
+                    {
+                        if (jsNode.NodeType == JsNodeType.JsonNameValue)
+                        {
+                            prototypeValue.NamesValues.Add((JsJsonNameValue)jsNode);
+                        }
+                        else
+                        {
+                            nonStatics.Add(jsNode);
+                        }
+                    }
+                }
+            }
+
+            ImportToUnit(unit, nonStatics);
+            if (prototypeValue.NamesValues.Count > 0)
+            {
+                var prototype = ExportTypePrefix(ce, false).Assign(prototypeValue);
+                unit.Statements.Add(prototype.Statement());
+            }
+            ImportToUnit(unit, statics);
+
             var baseCe = ce.GetBaseTypeDefinition();
             if (baseCe != null && Utils.Sk.IsNativeType(baseCe) && !Utils.Sk.IsGlobalType(baseCe) && !Utils.Sk.OmitInheritance(ce))
             {
@@ -103,13 +141,18 @@ namespace SharpKit.Compiler.JavaScript.Conversion
 
             var func = (JsFunction)node;
             func.Name = null;
-            var ce = me.GetDeclaringTypeDefinition();
-            var member = ExportTypePrefix(ce, me.IsStatic);
-            member = member.Member(SkJs.GetEntityJsName(me));
             if (LongFunctionNames)
                 func.Name = SkJs.GetLongFunctionName(me);
-            var st = member.Assign(func).Statement();
-            return st;
+
+            if (me.IsStatic)
+            {
+                var ce = me.GetDeclaringTypeDefinition();
+                var member = ExportTypePrefix(ce, me.IsStatic);
+                member = member.Member(SkJs.GetEntityJsName(me));
+                var st = member.Assign(func).Statement();
+                return st;
+            }
+            return Js.JsonNameValue(SkJs.GetEntityJsName(me), func);
         }
 
         public override JsNode _Visit(IProperty pe)
@@ -117,9 +160,11 @@ namespace SharpKit.Compiler.JavaScript.Conversion
             var list = GetAccessorsToExport(pe);
             if (Utils.Sk.IsNativeProperty(pe))
             {
-                var statements = new List<JsStatement>();
+                var nodes = new JsNodeList
+                {
+                    Nodes = list.Select(ExportMethod).ToList()
+                };
 
-                statements.AddRange(list.Select(ExportMethod).Cast<JsStatement>());
 
                 var json = new JsJsonObjectExpression();
                 foreach (var accessor in list)
@@ -138,14 +183,16 @@ namespace SharpKit.Compiler.JavaScript.Conversion
                     Js.String(pe.Name),
                     json).Statement();
 
-                statements.Add(defineStatement);
+                nodes.Nodes.Add(defineStatement);
 
-                return new JsUnit() { Statements = statements };
+                return nodes;
             }
             else
             {
-                var list2 = list.Select(ExportMethod).Cast<JsStatement>().ToList();
-                return new JsUnit { Statements = list2 };
+                return new JsNodeList
+                {
+                    Nodes = list.Select(ExportMethod).ToList()
+                };
             }
         }
 
