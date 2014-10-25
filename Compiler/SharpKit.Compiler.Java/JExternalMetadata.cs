@@ -37,9 +37,8 @@ namespace SharpKit.Compiler.Targets.Java
         }
         public void Process()
         {
-            var list = Project.Compilation.GetReferencedAssemblies().ToList();//.getExternalAssemblies().Select(t => t.getAssemblyEntity()).ToList()
-            list.Add(Project.Compilation.MainAssembly);//.getAssemblyEntity());
-            var list2 = list.Select(t => t.GetExtension(true));
+            var assemblies = new[] { Project.Compilation.MainAssembly }.Concat(Project.Compilation.GetReferencedAssemblies());
+            var list2 = assemblies.Select(t => t.GetExtension(true));
             foreach (var asm in list2)
             {
                 if (asm.ResolvedAttributes == null)

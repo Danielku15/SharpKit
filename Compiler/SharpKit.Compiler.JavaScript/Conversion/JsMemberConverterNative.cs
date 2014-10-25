@@ -18,12 +18,6 @@ namespace SharpKit.Compiler.JavaScript.Conversion
             ExportTypeNamespace(unit, ce);
             var members = GetMembersToExport(ce);
 
-            var ctors = ce.Members.Count(t => t.SymbolKind == SymbolKind.Constructor && !t.IsStatic);
-            if (ce.GetJsTypeAttribute().Mode == JsMode.Prototype && ctors > 1)
-            {
-                Log.Error(ce, "Prototype classes cannot have multiple constructors");
-            }
-
             VisitToUnit(unit, members);
             var baseCe = ce.GetBaseTypeDefinition();
             if (baseCe != null && Utils.Sk.IsNativeType(baseCe) && !Utils.Sk.IsGlobalType(baseCe) && !Utils.Sk.OmitInheritance(ce))

@@ -38,9 +38,8 @@ namespace SharpKit.Compiler.JavaScript
         }
         public void Process()
         {
-            var list = Project.Compilation.GetReferencedAssemblies().ToList();//.getExternalAssemblies().Select(t => t.getAssemblyEntity()).ToList()
-            list.Add(Project.Compilation.MainAssembly);//.getAssemblyEntity());
-            var list2 = list.Select(t => t.GetExtension(true));
+            var assemblies = new[] {Project.Compilation.MainAssembly}.Concat(Project.Compilation.GetReferencedAssemblies());
+            var list2 = assemblies.Select(t => t.GetExtension(true));
             list2.Where(t => t.ResolvedAttributes != null).ForEach(asm =>
                 {
                     var atts = asm.ResolvedAttributes.FindByType<JsTypeAttribute>()
